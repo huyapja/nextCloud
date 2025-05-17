@@ -15,6 +15,7 @@ export function fetchPlans() {
  * @returns {Array} List of plans
 */
 export function getPlans() {
+	console.log("plans=================", plans.data);
 	return plans.data || [];
 }
 

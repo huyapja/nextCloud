@@ -611,7 +611,9 @@ export default {
 			}));
 		},
 		selectedPlan() {
+			console.log("22222");
 			if (!plans?.data) return;
+			console.log("plans", plans);
 			return plans.data.find((p) => p.name === this.plan.name);
 		},
 		versionAppsMap() {

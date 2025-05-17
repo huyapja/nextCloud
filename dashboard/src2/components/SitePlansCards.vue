@@ -32,16 +32,21 @@ export default {
 		},
 		plans() {
 			let plans = getPlans();
-
+			console.log("plans", plans);
 			if (this.isPrivateBenchSite) {
+				console.log("1");
 				plans = plans.filter((plan) => plan.private_benches);
 			}
 			if (this.isPrivateBenchSite && this.isDedicatedServerSite) {
+				console.log("2");
 				plans = plans.filter((plan) => plan.dedicated_server_plan);
 			} else {
+				console.log("3");
 				plans = plans.filter((plan) => !plan.dedicated_server_plan);
+				console.log("3plans", plans);
 			}
 			if (this.selectedCluster) {
+				console.log("4");
 				plans = plans.map((plan) => {
 					return {
 						...plan,
@@ -54,6 +59,7 @@ export default {
 				});
 			}
 			if (this.selectedApps) {
+				console.log("5");
 				plans = plans.map((plan) => {
 					return {
 						...plan,
@@ -68,6 +74,7 @@ export default {
 				});
 			}
 			if (this.selectedVersion) {
+				console.log("6");
 				plans = plans.map((plan) => {
 					return {
 						...plan,
@@ -80,9 +87,10 @@ export default {
 				});
 			}
 			if (this.hideRestrictedPlans) {
+				console.log("7");
 				plans = plans.filter((plan) => !plan.restricted_plan);
 			}
-
+			console.log("8");
 			return plans.map((plan) => {
 				return {
 					...plan,
