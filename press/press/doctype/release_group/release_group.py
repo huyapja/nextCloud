@@ -67,12 +67,9 @@ class ReleaseGroup(Document, TagHelpers):
 
 	if TYPE_CHECKING:
 		from frappe.types import DF
-
 		from press.press.doctype.common_site_config.common_site_config import CommonSiteConfig
 		from press.press.doctype.release_group_app.release_group_app import ReleaseGroupApp
-		from press.press.doctype.release_group_dependency.release_group_dependency import (
-			ReleaseGroupDependency,
-		)
+		from press.press.doctype.release_group_dependency.release_group_dependency import ReleaseGroupDependency
 		from press.press.doctype.release_group_mount.release_group_mount import ReleaseGroupMount
 		from press.press.doctype.release_group_package.release_group_package import ReleaseGroupPackage
 		from press.press.doctype.release_group_server.release_group_server import ReleaseGroupServer
@@ -83,6 +80,7 @@ class ReleaseGroup(Document, TagHelpers):
 		bench_config: DF.Code | None
 		build_server: DF.Link | None
 		central_bench: DF.Check
+		check_dependant_apps: DF.Check
 		check_dependent_apps: DF.Check
 		common_site_config: DF.Code | None
 		common_site_config_table: DF.Table[CommonSiteConfig]

@@ -21,6 +21,7 @@
   "build_server",
   "apps_tab",
   "check_dependent_apps",
+  "check_dependant_apps",
   "apps",
   "config_tab",
   "bench_configuration_section",
@@ -381,10 +382,17 @@
    "fieldname": "check_dependent_apps",
    "fieldtype": "Check",
    "label": "Check Dependent Apps"
+  },
+  {
+   "default": "0",
+   "fieldname": "check_dependant_apps",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Check Dependant Apps"
   }
  ],
  "links": [],
- "modified": "2025-05-17 19:02:50.399380",
+ "modified": "2025-05-21 16:41:37.217189",
  "modified_by": "Administrator",
  "module": "Press",
  "name": "Release Group",
