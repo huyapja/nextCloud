@@ -425,17 +425,25 @@ def apps(name):
 		limit=1,
 		pluck="name",
 	)
+	# if latest_bench:
+	# 	latest_bench = latest_bench[0]
+	# else:
+	# 	latest_bench = None
+
+	# latest_deployed_apps = frappe.get_all(
+	# 	"Bench",
+	# 	filters={"name": latest_bench},
+	# 	fields=["`tabBench App`.app", "`tabBench App`.hash"],
+	# )
+	latest_bench = latest_bench[0] if latest_bench else None
+
+	latest_deployed_apps = []
 	if latest_bench:
-		latest_bench = latest_bench[0]
-	else:
-		latest_bench = None
-
-	latest_deployed_apps = frappe.get_all(
-		"Bench",
-		filters={"name": latest_bench},
-		fields=["`tabBench App`.app", "`tabBench App`.hash"],
-	)
-
+		latest_deployed_apps = frappe.get_all(
+			"Bench",
+			filters={"name": latest_bench},
+			fields=["`tabBench App`.app", "`tabBench App`.hash"],
+		)
 	for app in group.apps:
 		source = frappe.get_doc("App Source", app.source)
 		app = frappe.get_doc("App", app.app)

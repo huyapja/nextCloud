@@ -203,7 +203,7 @@
    "fieldname": "use_for_new_benches",
    "fieldtype": "Check",
    "label": "Use For New Benches",
-   "read_only": 1
+   "read_only": 0
   },
   {
    "fieldname": "hostname",
