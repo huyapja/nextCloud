@@ -274,7 +274,7 @@ def get_group_for_new_site_and_set_localisation_app(site, apps):
 
 def validate_plan(server, plan):
 	if (
-		frappe.db.get_value("Site Plan", plan, "price_usd") > 0
+		frappe.db.get_value("Site Plan", plan, "price_usd") >= 0
 		or frappe.db.get_value("Site Plan", plan, "dedicated_server_plan") == 1
 	):
 		return
