@@ -1872,7 +1872,7 @@ def get_upload_link(file, parts=1):
 		aws_secret_access_key=get_decrypted_password(
 			"Press Settings", "Press Settings", "remote_secret_access_key"
 		),
-		region_name="ap-south-1",
+		region_name="us-east-1",
 	)
 	try:
 		# The response contains the presigned URL and required fields
@@ -1913,7 +1913,7 @@ def multipart_exit(file, id, action, parts=None):
 			"remote_secret_access_key",
 			raise_exception=False,
 		),
-		region_name="ap-south-1",
+		region_name="us-east-1",
 	)
 	if action == "abort":
 		response = s3_client.abort_multipart_upload(Bucket="uploads.frappe.cloud", Key=file, UploadId=id)

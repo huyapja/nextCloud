@@ -237,6 +237,12 @@ RUN git config --global --add safe.directory /home/frappe/context/apps/webshop/.
 RUN git config --global --add safe.directory /home/frappe/context/apps/erpnext/.git
 RUN git config --global --add safe.directory /home/frappe/context/apps/hrms/.git
 RUN git config --global --add safe.directory /home/frappe/context/apps/crm/.git
+RUN git config --global --add safe.directory /home/frappe/context/apps/nextWiki/.git
+RUN git config --global --add safe.directory /home/frappe/context/apps/nextLearning/.git
+RUN git config --global --add safe.directory /home/frappe/context/apps/nextConnect/.git
+RUN git config --global --add safe.directory /home/frappe/context/apps/nextHelpdesk/.git
+RUN git config --global --add safe.directory /home/frappe/context/apps/nextgrp/.git
+RUN git config --global --add safe.directory /home/frappe/context/apps/nextauth/.git
 # For the sake of completing the step
 RUN `#stage-bench-env`
 

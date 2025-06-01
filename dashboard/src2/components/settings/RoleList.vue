@@ -19,7 +19,7 @@ const listOptions = ref({
 		{ users: ['user', 'user.full_name', 'user.user_image'] },
 		'admin_access',
 	],
-	documentation: 'https://frappecloud.com/docs/role-permissions',
+	documentation: 'https://admin.nextgrp.vn/',
 	columns: [
 		{
 			label: 'Role',
