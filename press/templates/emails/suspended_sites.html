@@ -9,21 +9,21 @@
             {{ subject }}
         </p>
         <p class="mb-6">
-            Unfortunately, we must bring to your attention that your site hosted on Frappe Cloud has been temporarily <strong>suspended</strong> due to an unpaid invoice.<br>
+            Rất tiếc, chúng tôi xin thông báo rằng trang của bạn được lưu trữ trên NextGRP Cloud đã tạm thời <strong>bị đình chỉ</strong> do chưa thanh toán hóa đơn.<br>
             <br>
-            To continue using your Frappe Cloud site, please settle your invoices by going to your <a href="https://frappecloud.com/dashboard/billing">Frappe Cloud Dashboard.</a><br>
+            Để tiếp tục sử dụng trang trên NextGRP Cloud của bạn, vui lòng thanh toán các hóa đơn bằng cách truy cập <a href="https://admin.nextgrp.vn/dashboard/billing">Trang quản trị NextGRP Cloud.</a><br>
             <br>
-            <strong>Once your invoices are settled, your site will be activated immediately.</strong><br>
+            <strong>Sau khi thanh toán, trang của bạn sẽ được kích hoạt ngay lập tức.</strong><br>
             <br>
-            Please complete the above steps before <strong>20th of this month</strong>, failing which your site will be dropped and if you have subscribed to $10 plan you might lose your data permanently.<br>
+            Vui lòng hoàn tất các bước trên trước <strong>ngày 20 của tháng này</strong>, Nếu không, trang của bạn sẽ bị xóa, và nếu bạn đang sử dụng gói $10, bạn có thể mất toàn bộ dữ liệu vĩnh viễn.<br>
             <br>
-            We're sad to see you discontinue usage of Frappe Cloud and value your feedback. Please fill this <a href="frappecloud.com/frappe-cloud-feedback-form">form</a> or <a href="https://calendly.com/neha-frappe/frappe-user-interviews">block 15-min</a> with our team to share your experience.
-            If you have any concerns or questions, contact our support team at support.frappe.io.
+            Chúng tôi rất tiếc khi thấy bạn ngừng sử dụng NextGRP Cloud và trân trọng phản hồi của bạn. Vui lòng điền vào <a href="https://admin.nextgrp.vn/frappe-cloud-feedback-form">form</a>.
+            Nếu bạn có bất kỳ thắc mắc hoặc câu hỏi nào, vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi tại support.nextgrp.vn
         </p>
 
         {%- if sites -%}
 		{{ utils.separator() }}
-		<p class="mt-0 mb-2">Following sites were suspended:</p>
+		<p class="mt-0 mb-2">Những trang sau đây sẽ bị đình chỉ</p>
 		<ul class="list-disc">
 			{%- for site in sites -%}
 			<li class="text-sm font-medium">{{ site }}</li>

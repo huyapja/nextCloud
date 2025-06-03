@@ -9,18 +9,18 @@
 
 <td class="text-base leading-6 text-gray-900">
     <div class="p-8 bg-white from-markdown">
-        <p><strong>You're almost done!</strong></p>
-        <p>Just one quick step left to get you started with Frappe Cloud!</p>
+        <p><strong>Mọi thứ gần như hoàn hảo!</strong></p>
+        <p>Chỉ còn một bước nữa để bạn bắt đầu sử dụng NextGRP Cloud!</p>
         {% if otp %}
-        <p class="font-medium">Verification Code</p>
+        <p class="font-medium">Mã xác thực</p>
         <div class="text-xl font-bold">{{ otp }}</div>
-        <p>Or click on the button to verify your account</p>
+        <p>Hoặc nhấn vào nút bên dưới để xác minh tài khoản của bạn</p>
         {% else %}
-        <p>Click on the button to verify your account</p>
+        <p>Nhấn vào nút bên dưới để xác minh tài khoản của bạn</p>
         {% endif %}
-        {{ utils.button('Verify Account', link, true) }}
+        {{ utils.button('Xác thực tài khoản', link, true) }}
         {{ utils.separator() }}
-        <p class="my-0">Team Frappe</p>
+        <p class="my-0">Đội ngũ NextGRP Cloud</p>
     </div>
     {% if read_pixel_path %}
     <img src="{{ read_pixel_path }}">

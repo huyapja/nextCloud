@@ -9,28 +9,28 @@
 			{%- if subject -%}
 			{{ subject }}
 			{%- else -%}
-			Payment of {{ amount }} for Frappe Cloud was unsuccessful.
+			Thanh toán số tiền {{ amount }} cho NextGRP Cloud không thành công.
 			{%- endif -%}
 		</p>
 		{%- if card_not_added -%}
 		<p class="mb-6">
-			You haven't added a card for your Frappe Cloud subscription. Your sites will be suspended until you
-			update your card details in your account.
+			Bạn chưa thêm thẻ thanh toán cho đăng ký NextGRP Cloud của mình. 
+			Các trang của bạn sẽ bị tạm ngưng cho đến khi bạn cập nhật thông tin thẻ trong tài khoản.
 		</p>
-		{{ utils.button('Update Billing Settings', account_update_link) }}
+		{{ utils.button('Cập nhật cài đặt thanh toán', account_update_link) }}
 		{%- else -%}
 		<p class="mb-6">
-			We attempted to charge your card ending in <strong>{{ last_4 }}</strong> for your Frappe Cloud subscription,
-			but were unsuccessful. Please update your card details in your
+			Chúng tôi đã cố gắng trừ tiền từ thẻ của bạn có số đuôi là <strong>{{ last_4 }}</strong> cho đăng ký NextGRP Cloud nhưng không thành công. 
+			Vui lòng cập nhật thông tin thẻ trong
 			{{ utils.link('Billing Settings', account_update_link) }}
-			or pay manually by clicking the following link.
+			hoặc thanh toán thủ công bằng cách nhấn vào liên kết sau.
 		</p>
-		{{ utils.button('Pay Invoice Now', payment_link) }}
+		{{ utils.button('Thanh toán ngay', payment_link) }}
 		{%- endif -%}
 
 		{%- if sites -%}
 		{{ utils.separator() }}
-		<p class="mt-0 mb-2">Following sites were suspended:</p>
+		<p class="mt-0 mb-2">Các trang sau đã bị tạm ngưng:</p>
 		<ul class="list-disc">
 			{%- for site in sites -%}
 			<li class="text-sm font-medium">{{ site }}</li>

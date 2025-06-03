@@ -3,7 +3,7 @@
 {% block content %}
 <div class="p-8 bg-white">
     <div class="from-markdown">
-        <p>Hi {{ developer_name }},</p>
+        <!-- <p>Hi {{ developer_name }},</p>
 
         <p>I hope this email finds you well.</p>
 
@@ -29,7 +29,28 @@
         <p>Thank you for your understanding and cooperation.</p>
 
         <p>Regards,<br>
-            Team Frappe Cloud</p>
+            Team Frappe Cloud</p> -->
+        <p>Xin chào {{ developer_name }},</p>
+
+        <p>Chúc bạn một ngày tốt lành.</p>
+        
+        <p>Tôi viết email này để thông báo đến bạn về một cập nhật quan trọng liên quan đến chính sách của NextGRP Cloud Marketplace đối với các ứng dụng. Để tiếp tục được phân phối trên Marketplace, tất cả các ứng dụng bắt buộc phải là mã nguồn mở hoàn toàn, tức là repository trên GitHub phải được chuyển sang chế độ công khai.</p>
+         
+        <p>Để tuân thủ chính sách mới này, vui lòng chuyển repository của ứng dụng sang công khai trước ngày 31 tháng 3 năm 2025. Sau thời gian này, các ứng dụng không tuân thủ sẽ bị vô hiệu hóa hoặc gỡ khỏi NextGRP Cloud Marketplace.</p>
+        
+        <p>Dưới đây là thông tin chi tiết về ứng dụng của bạn:</p>
+         
+        <ul>
+            <li><strong>Tên ứng dụng:</strong> {{ app_name }}</li>
+            <li><strong>Liên kết Repository:</strong> {{ repository_url }}</li>
+        </ul>
+        
+        <p>Chúng tôi hiểu rằng thay đổi này có thể cần một số điều chỉnh và rất mong bạn sớm quan tâm xử lý. Nếu bạn có bất kỳ câu hỏi nào hoặc gặp khó khăn trong việc công khai repository, vui lòng tạo ticket hỗ trợ tại support.frappe.io. Chúng tôi luôn sẵn sàng hỗ trợ để đảm bảo quá trình chuyển đổi diễn ra suôn sẻ.</p>
+        
+        <p>Xin cảm ơn bạn đã thông cảm và hợp tác.</p>
+        
+        <p>Trân trọng,<br>
+        Đội ngũ NextGRP Cloud</p>    
     </div>
 </div>
 {% endblock %}
