@@ -17,11 +17,15 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(advancedFormat);
 
+// export function dayjsLocal(dateTimeString) {
+// 	let localTimezone = dayjs.tz.guess();
+// 	// dates are stored in Asia/Calcutta timezone on the server
+// 	return dayjs.tz(dateTimeString, 'Asia/Calcutta').tz(localTimezone);
+// }
+
 export function dayjsLocal(dateTimeString) {
-	let localTimezone = dayjs.tz.guess();
-	// dates are stored in Asia/Calcutta timezone on the server
-	return dayjs.tz(dateTimeString, 'Asia/Calcutta').tz(localTimezone);
-}
+	return dayjs.tz(dateTimeString, 'Asia/Calcutta');  
+  }
 
 export function dayjsIST(dateTimeString) {
 	return dayjs(dateTimeString).tz('Asia/Calcutta');

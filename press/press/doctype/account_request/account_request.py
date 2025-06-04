@@ -163,7 +163,7 @@ class AccountRequest(Document):
 			print()
 			return
 
-		subject = f"{self.otp} - OTP for Frappe Cloud Account Verification"
+		subject = f"{self.otp} - OTP để xác minh tài khoản NextGRP Cloud"
 		args = {}
 		sender = ""
 
@@ -233,7 +233,7 @@ class AccountRequest(Document):
 			print()
 			return
 
-		subject = f"{self.otp} - OTP for Frappe Cloud Login"
+		subject = f"{self.otp} - OTP để đăng nhập vào NextGRP Cloud"
 		args = {
 			"otp": self.otp,
 		}

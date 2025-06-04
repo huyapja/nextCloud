@@ -107,22 +107,25 @@ export function siteTabFilterControls() {
 			options: ['', 'Active', 'Inactive', 'Suspended', 'Broken'],
 		},
 		{
-			type: 'select',
+			type: 'link',
 			label: 'Region',
 			fieldname: 'cluster',
-			options: [
-				'',
-				'Bahrain',
-				'Cape Town',
-				'Frankfurt',
-				'KSA',
-				'London',
-				'Mumbai',
-				'Singapore',
-				'UAE',
-				'Virginia',
-				'Zurich',
-			],
+			// options: [
+			// 	'',
+			// 	'Bahrain',
+			// 	'Cape Town',
+			// 	'Frankfurt',
+			// 	'KSA',
+			// 	'London',
+			// 	'Mumbai',
+			// 	'Singapore',
+			// 	'UAE',
+			// 	'Virginia',
+			// 	'Zurich',
+			// ],
+			options:  {
+				doctype: 'Cluster'
+			}
 		},
 	];
 }

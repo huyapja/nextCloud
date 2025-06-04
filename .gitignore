@@ -164,3 +164,6 @@ press/public/css/marketplace-next.css
 # IDE
 .idea
 .vscode
+
+# certbot
+press/public/.certbot/

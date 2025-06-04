@@ -229,10 +229,13 @@ function filterControls() {
 			}
 		},
 		{
-			type: 'select',
+			type: 'link',
 			label: 'Region',
 			fieldname: 'cluster',
-			options: clusterOptions
+			// options: clusterOptions
+			options:{
+				doctype:'Cluster'
+			}
 		}
 	] satisfies FilterField[] as FilterField[];
 }
