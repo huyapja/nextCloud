@@ -4037,3 +4037,6 @@ def create_site_status_update_webhook_event(site: str):
 	if record.team == "Administrator":
 		return
 	create_webhook_event("Site Status Update", record, record.team)
+
+def sync_info_auto() :
+    Site.sync_info()
