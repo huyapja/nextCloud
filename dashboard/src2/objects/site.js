@@ -114,10 +114,12 @@ export default {
 					},
 				},
 				{
-					type: 'select',
+					type: 'link',
 					label: 'Region',
 					fieldname: 'cluster',
-					options: clusterOptions,
+					options: {
+						doctype: 'Cluster',
+					},
 				},
 				{
 					type: 'link',

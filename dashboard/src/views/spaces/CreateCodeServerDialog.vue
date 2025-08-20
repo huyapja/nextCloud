@@ -94,8 +94,13 @@ export default {
 			if (subdomain.length > 32) {
 				return 'Subdomain too long. Use 32 or less characters';
 			}
-			if (!subdomain.match(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/)) {
-				return 'Subdomain contains invalid characters. Use lowercase characters, numbers and hyphens';
+			// if (!subdomain.match(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/)) {
+			// 	return 'Subdomain contains invalid characters. Use lowercase characters, numbers and hyphens';
+			// }
+			const regex = /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?))*$/;
+
+			if (!regex.test(subdomain)) {
+				return 'Subdomain contains invalid characters. Use lowercase characters, numbers, hyphens, and dots';
 			}
 			return null;
 		}

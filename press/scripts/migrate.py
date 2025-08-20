@@ -310,16 +310,36 @@ def select_team(session):
 	return team
 
 
+# def is_valid_subdomain(subdomain):
+# 	if len(subdomain) < 5:
+# 		print("Subdomain too short. Use 5 or more characters")
+# 		return False
+# 	matched = re.match("^[a-z0-9][a-z0-9-]*[a-z0-9]$", subdomain)
+# 	if matched:
+# 		return True
+# 	print(
+# 		"Subdomain contains invalid characters. Use lowercase characters, numbers and hyphens"
+# 	)
+
 def is_valid_subdomain(subdomain):
-	if len(subdomain) < 5:
-		print("Subdomain too short. Use 5 or more characters")
-		return False
-	matched = re.match("^[a-z0-9][a-z0-9-]*[a-z0-9]$", subdomain)
-	if matched:
-		return True
-	print(
-		"Subdomain contains invalid characters. Use lowercase characters, numbers and hyphens"
-	)
+    if len(subdomain) < 5:
+        print("Subdomain too short. Use 5 or more characters")
+        return False
+
+    # Regex cho phép nhiều nhãn cách nhau bằng dấu chấm
+    pattern = re.compile(
+        r'^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?))*$'
+    )
+
+    if pattern.match(subdomain):
+        return True
+
+    print(
+        "Subdomain contains invalid characters. "
+        "Use lowercase letters, numbers, hyphens, and dots"
+    )
+    return False
+
 
 
 @add_line_after

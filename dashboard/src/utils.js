@@ -200,8 +200,9 @@ export function validateSubdomain(subdomain) {
 	if (subdomain.length > 32) {
 		return 'Subdomain too long. Use 32 or less characters';
 	}
-	if (!subdomain.match(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/)) {
-		return 'Subdomain contains invalid characters. Use lowercase characters, numbers and hyphens';
+	// if (!subdomain.match(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/)) {
+	if (!subdomain.match(/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?))*$/)) {
+		return 'Subdomain contains invalid characters. Use lowercase characters, numbers and hyphens, dots';
 	}
 	return null;
 }

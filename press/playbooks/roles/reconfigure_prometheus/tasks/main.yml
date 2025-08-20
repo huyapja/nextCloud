@@ -36,12 +36,12 @@
 
 - name: Configure Prometheus
   become: yes
-  become_user: frappe
+  become_user: root
   template:
     src: ../../prometheus/templates/prometheus.yml
     dest: /home/frappe/prometheus/prometheus.yml
     force: true
-    mode: 0600
+    mode: 0644
     validate: "/home/frappe/prometheus/promtool check config %s"
 
 - name: Reload Prometheus Service

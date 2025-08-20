@@ -8,4 +8,4 @@ filebeat export template > filebeat.template.json
 2. Use the exported payload to create indexes (Replace `filebeat-version` with the appropriate version)
 ```sh
 curl -XPUT -H 'Content-Type: application/json' http://localhost:9200/_template/filebeat-<filebeat-version> -d@filebeat.template.json
-```
+``` 

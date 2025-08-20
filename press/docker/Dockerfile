@@ -53,6 +53,7 @@ RUN --mount=type=cache,target=/var/cache/apt apt-get update \
   # pycups dependencies
   gcc \
   libcups2-dev \
+  pandoc \
   # s3-attachment dependencies
   libmagic1 \
   && rm -rf /var/lib/apt/lists/* \
@@ -243,6 +244,12 @@ RUN git config --global --add safe.directory /home/frappe/context/apps/nextConne
 RUN git config --global --add safe.directory /home/frappe/context/apps/nextHelpdesk/.git
 RUN git config --global --add safe.directory /home/frappe/context/apps/nextgrp/.git
 RUN git config --global --add safe.directory /home/frappe/context/apps/nextauth/.git
+RUN git config --global --add safe.directory /home/frappe/context/apps/nexttheme/.git
+RUN git config --global --add safe.directory /home/frappe/context/apps/custom_theme/.git
+RUN git config --global --add safe.directory '*'
+RUN for dir in $(find /home/frappe/context/apps -type d -name ".git" -exec dirname {} \;); do \
+      git config --global --add safe.directory "$dir"; \
+    done
 # For the sake of completing the step
 RUN `#stage-bench-env`
 

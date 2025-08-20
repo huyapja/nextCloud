@@ -96,12 +96,29 @@ def get_tls():
 
 
 @frappe.whitelist(allow_guest=True)
-def targets(token):
-	monitor_token = frappe.db.get_single_value("Press Settings", "monitor_token")
-	if token != monitor_token:
-		return None
+# def targets(token):
+# 	monitor_token = frappe.db.get_single_value("Press Settings", "monitor_token")
+# 	if token != monitor_token:
+# 		return None
 
-	return {"benches": get_benches(), "clusters": get_clusters(), "domains": get_domains(), "tls": get_tls()}
+# 	return {"benches": get_benches(), "clusters": get_clusters(), "domains": get_domains(), "tls": get_tls()}
+
+def targets(): # BỎ tham số 'token' khỏi định nghĩa hàm
+    # Lấy giá trị 'token' từ frappe.form_dict
+    # frappe.form_dict chứa tất cả các tham số được gửi trong yêu cầu (bao gồm cả từ JSON body nếu Content-Type là application/json)
+    token = frappe.form_dict.get('token')
+
+    # Kiểm tra xem 'token' có tồn tại không
+    if not token:
+        frappe.throw("Error: 'token' parameter is missing.", frappe.ValidationError)
+    
+	monitor_token = frappe.db.get_single_value("Press Settings", "monitor_token")
+    if token != monitor_token:
+        
+        return None 
+
+    # Nếu token hợp lệ, trả về dữ liệu
+    return {"benches": get_benches(), "clusters": get_clusters(), "domains": get_domains(), "tls": get_tls()}
 
 
 @frappe.whitelist(allow_guest=True, xss_safe=True)

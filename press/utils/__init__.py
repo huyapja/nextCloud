@@ -915,10 +915,26 @@ def timer(f):
 	return wrap
 
 
+# def validate_subdomain(subdomain: str):
+# 	site_regex = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+# 	if not re.match(site_regex, subdomain):
+# 		frappe.throw("Subdomain contains invalid characters. Use lowercase characters, numbers and hyphens")
+# 	if len(subdomain) > 32:
+# 		frappe.throw("Subdomain too long. Use 32 or less characters")
+
+# 	if len(subdomain) < 5:
+# 		frappe.throw("Subdomain too short. Use 5 or more characters")
+
 def validate_subdomain(subdomain: str):
-	site_regex = r"^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+	# Cho phép nhiều nhãn cách nhau bằng dấu chấm
+	site_regex = r'^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?))*$'
+	
 	if not re.match(site_regex, subdomain):
-		frappe.throw("Subdomain contains invalid characters. Use lowercase characters, numbers and hyphens")
+		frappe.throw(
+			"Subdomain contains invalid characters. "
+			"Use lowercase characters, numbers, hyphens, and dots"
+		)
+
 	if len(subdomain) > 32:
 		frappe.throw("Subdomain too long. Use 32 or less characters")
 

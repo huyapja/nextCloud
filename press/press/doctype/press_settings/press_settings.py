@@ -22,7 +22,6 @@ class PressSettings(Document):
 
 	if TYPE_CHECKING:
 		from frappe.types import DF
-
 		from press.press.doctype.app_group.app_group import AppGroup
 		from press.press.doctype.erpnext_app.erpnext_app import ERPNextApp
 
@@ -112,6 +111,7 @@ class PressSettings(Document):
 		npo_discount: DF.Float
 		offsite_backups_access_key_id: DF.Data | None
 		offsite_backups_count: DF.Int
+		offsite_backups_endpoint_url: DF.Data | None
 		offsite_backups_provider: DF.Literal["AWS S3"]
 		offsite_backups_secret_access_key: DF.Password | None
 		partnership_fee_inr: DF.Int
@@ -258,6 +258,7 @@ class PressSettings(Document):
 			),
 			region_name="us-east-1",
 		)
+
 
 	@property
 	def boto3_iam_client(self):

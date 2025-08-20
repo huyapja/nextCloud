@@ -143,6 +143,8 @@
 						<div class="h-7"></div>
 					</div>
 					<div class="mt-2">
+						<div>{{console.log("Test log 1 currentPlan  : >>>>>>>>>>>>>>.",currentPlan)}}</div>
+						<div>{{console.log("Test log 2 currentUsage : >>>>>>>>>>>>>>.",currentUsage)}}</div>
 						<Progress
 							size="md"
 							:value="
@@ -400,7 +402,6 @@ export default {
 		},
 		currentPlan() {
 			if (!this.$site?.doc?.current_plan || !this.$team?.doc) return null;
-
 			const currency = this.$team.doc.currency;
 			return {
 				price:
@@ -416,9 +417,11 @@ export default {
 			};
 		},
 		currentUsage() {
+			console.log("Test log this.$site.doc?.current_usage",this.$site.doc?.current_usage)
 			return this.$site.doc?.current_usage;
 		},
 		$site() {
+			console.log("Test log getCachedDocumentResource('Site', this.site) ",getCachedDocumentResource('Site', this.site))
 			return getCachedDocumentResource('Site', this.site);
 		},
 	},

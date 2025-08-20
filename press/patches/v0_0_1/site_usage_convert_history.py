@@ -15,7 +15,7 @@ def execute():
 	frappe.db.auto_commit_on_many_writes = True
 	records = frappe.get_all(doctype, pluck="name")
 	total = len(records)
-
+	print("Test log execute : >>>>>>>>>>>>>>>>>>>>>>>>>>>", total)
 	for current, record in enumerate(records):
 		print(f"Updated {current} of {total}", end="\r")
 

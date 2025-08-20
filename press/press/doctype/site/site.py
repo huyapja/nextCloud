@@ -1790,10 +1790,10 @@ class Site(Document, TagHelpers):
 
 	@frappe.whitelist()
 	def sync_info(self, data=None):
+		print("Syncing site info for", data)
 		"""Updates Site Usage, site.config and timezone details for site."""
 		if not data:
 			data = self.fetch_info()
-
 		if not data:
 			return
 
@@ -4038,5 +4038,127 @@ def create_site_status_update_webhook_event(site: str):
 		return
 	create_webhook_event("Site Status Update", record, record.team)
 
-def sync_info_auto() :
-    Site.sync_info()
+def sync_info_auto():
+	"""Sync info for current site instance"""
+	Site.sync_info()
+
+
+def sync_info_auto_for_all_sites():
+	"""API to sync info for all active sites"""
+	try:
+		frappe.log_error(f"Sync All Info", "Sync All Info")
+		# Get all active sites
+		sites = frappe.get_all(
+			"Site", 
+			filters={"status": "Active"}, 
+			fields=["name"],
+			limit_page_length=0  # Get all records
+		)
+		
+		success_count = 0
+		error_count = 0
+		errors = []
+		
+		for site_record in sites:
+			try:
+				site = frappe.get_doc("Site", site_record.name)
+				site.sync_info()
+				success_count += 1
+				frappe.db.commit()  # Commit after each successful sync
+			except Exception as e:
+				error_count += 1
+				error_msg = f"Site {site_record.name}: {str(e)}"
+				errors.append(error_msg)
+				frappe.log_error(error_msg, "Site Sync Info Error")
+				continue
+		
+		result = {
+			"success": True,
+			"message": f"Sync completed. Success: {success_count}, Errors: {error_count}",
+			"total_sites": len(sites),
+			"success_count": success_count,
+			"error_count": error_count,
+			"errors": errors[:10]  # Show first 10 errors only
+		}
+		
+		return result
+		
+	except Exception as e:
+		frappe.log_error(f"Sync all sites error: {str(e)}", "Site Sync All Error")
+		return {
+			"success": False,
+			"message": f"Failed to sync sites: {str(e)}"
+		}
+
+@frappe.whitelist()
+def sync_info_auto_for_all_sites_background():
+	"""API to sync info for all active sites in background"""
+	frappe.enqueue(
+		"press.press.doctype.site.site.sync_info_auto_for_all_sites_worker",
+		queue="long",
+		timeout=3600,  # 1 hour timeout
+		job_name="sync_all_sites_info"
+	)
+	
+	return {
+		"success": True,
+		"message": "Sync job has been queued in background"
+	}
+
+def sync_info_auto_for_all_sites_worker():
+	"""Background worker to sync info for all sites"""
+	try:
+		sites = frappe.get_all(
+			"Site", 
+			filters={"status": "Active"}, 
+			fields=["name"],
+			limit_page_length=0
+		)
+		
+		total = len(sites)
+		processed = 0
+		success_count = 0
+		error_count = 0
+		
+		for site_record in sites:
+			try:
+				processed += 1
+				site = frappe.get_doc("Site", site_record.name)
+				site.sync_info()
+				success_count += 1
+				
+				# Log progress every 10 sites
+				if processed % 10 == 0:
+					frappe.publish_realtime(
+						"sync_sites_progress",
+						{"processed": processed, "total": total, "success": success_count, "errors": error_count},
+						user=frappe.session.user
+					)
+				
+				frappe.db.commit()
+				
+			except Exception as e:
+				error_count += 1
+				frappe.log_error(f"Site {site_record.name}: {str(e)}", "Site Sync Info Worker Error")
+				continue
+		
+		# Final status
+		frappe.publish_realtime(
+			"sync_sites_complete",
+			{
+				"total": total,
+				"success": success_count, 
+				"errors": error_count,
+				"message": f"Sync completed. Success: {success_count}/{total}, Errors: {error_count}"
+			},
+			user=frappe.session.user
+		)
+		
+	except Exception as e:
+		frappe.log_error(f"Sync all sites worker error: {str(e)}", "Site Sync All Worker Error")
+		frappe.publish_realtime(
+			"sync_sites_error",
+			{"message": f"Sync failed: {str(e)}"},
+			user=frappe.session.user
+		)
+
