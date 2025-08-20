@@ -534,7 +534,6 @@ class Agent:
 					"ACCESS_KEY": settings.offsite_backups_access_key_id,
 					"SECRET_KEY": settings.get_password("offsite_backups_secret_access_key"),
 					"REGION": backup_bucket.get("region") if isinstance(backup_bucket, dict) else "",
-					"ENDPOINT_URL": settings.offsite_backups_endpoint_url,
 				}
 				data.update({"offsite": {"bucket": bucket_name, "auth": auth, "path": backups_path}})
 

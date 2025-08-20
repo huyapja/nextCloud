@@ -111,7 +111,6 @@ class PressSettings(Document):
 		npo_discount: DF.Float
 		offsite_backups_access_key_id: DF.Data | None
 		offsite_backups_count: DF.Int
-		offsite_backups_endpoint_url: DF.Data | None
 		offsite_backups_provider: DF.Literal["AWS S3"]
 		offsite_backups_secret_access_key: DF.Password | None
 		partnership_fee_inr: DF.Int
