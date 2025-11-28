@@ -1,23 +1,22 @@
 <template>
-<div
-		class="flex h-screen overflow-hidden" 
+	<div
+		class="flex h-screen overflow-hidden"
+		v-if="!$resources.validateRequestKey?.loading && email"
 	>
 		<div class="w-full overflow-auto">
 			<SetupOrgBox
-				:title="invitedBy ? 'Invitation to join' :  `Thiết lập thông tin tổ chức của bạn`"
-				:subtitle="invitedBy ? `Invitation by ${invitedBy}` :''"
+				:title="invitedBy ? 'Invitation to join' : 'Thiết lập thông tin tổ chức của bạn'"
+				:subtitle="invitedBy ? `Invitation by ${invitedBy}` : ''"
 			>
-				<!-- <template v-slot:logo>
+				<template v-slot:logo v-if="saasProduct">
 					<div class="flex flex-col items-center">
-						<div class="flex flex-col items-center">
 						<img
 							class="inline-block h-[150px] w-[150px] rounded-sm"
 							:src="saasProduct?.logo"
-							/>
+						/>
 					</div>
-					</div>
-				</template> -->
-				<form class="mt-6 flex flex-col" @submit.prevent="createSite">
+				</template>
+				<form class="mt-6 flex flex-col" @submit.prevent="submitForm">
 					<template v-if="is2FA">
 						<FormControl
 							label="2FA Code from your Authenticator App"
@@ -41,7 +40,8 @@
 						<ErrorMessage class="mt-2" :message="$resources.verify2FA.error" />
 					</template>
 					<template v-else>
-						<div class="space-y-4"> 
+						<div class="space-y-4">
+							<template v-if="!userExists">
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-4"> 
 								<div>
 									<labeL class="block text-xs text-ink-gray-5 pb-[6px]">Mã Cơ quan</labeL>
@@ -111,8 +111,8 @@
 									<FormControl
 										label="Tên domain"
 										type="text"
-										v-model="domain_rq"
-										name="domain_rq"
+										v-model="domain"
+										name="domain"
 										autocomplete="given-name"
 										variant="outline"
 										required
@@ -123,7 +123,7 @@
 										type="text"
 										:modelValue="email"
 										variant="outline"
-										v-model="email"
+										disabled
 										required
 									/>
 								</div>
@@ -140,7 +140,8 @@
 										required
 									 
 									/> 
-								</div> 
+								</div>
+							</template>
 							
 							<!-- <FormControl
 								type="select"
@@ -157,7 +158,7 @@
 							:message="$resources.setupAccount?.error || ''"
 						/> -->
 						<div class="mt-4 flex justify-center">
-							<!-- <Button
+							<Button
 							class="mt-4 p-4 pr-8 pl-8"
 							variant="solid"
 							:loading="$resources.setupAccount?.loading"
@@ -166,15 +167,7 @@
 							{{
 								is2FA ? 'Verify' : isInvitation ? 'Accept' : 'Tạo tổ chức'
 							}}
-						</Button> -->
-						<Button
-												class="mt-4 p-4 pr-8 pl-8"
-												variant="solid"
-												label="Tạo tổ chức"
-												:loading="findingClosestServer ||$resources.createSite?.loading"
-												:loadingText="'Đang khởi tạo tổ chức...'"
-												theme="blue"
-											/>
+						</Button>
 						</div>
 					</template>
 				</form>
@@ -191,24 +184,33 @@
 				</div> -->
 			</SetupOrgBox>
 		</div>
-	</div> 
+	</div>
+	<div
+		class="mt-20 px-6 text-center"
+		v-else-if="!$resources.validateRequestKey?.loading && !email"
+	>
+		Verification link is invalid or expired.
+		<Link to="/signup">Sign up</Link>
+		for a new account.
+	</div>
+	<div v-else></div>
 </template>
+
 <script>
-import SetupOrgBox from '../../components/auth/SetupOrgBox.vue';
+import SetupOrgBox from '../components/auth/SetupOrgBox.vue';
 import Link from '@/components/Link.vue';
 import Form from '@/components/Form.vue';
-import { DashboardError } from '../../utils/error';
+import { DashboardError } from '../utils/error';
 import { toRaw, isProxy } from 'vue';
 import {toast} from 'vue-sonner';
-
 export default {
-	name: 'SignupSetup',
-	props: ['productId'],
+	name: 'SetupAccount',
 	components: {
 		SetupOrgBox,
 		Link,
 		Form,
-	}, 
+	},
+	props: ['requestKey', 'joinRequest'],
 	data() {
 		return {
 			email: null,
@@ -217,95 +219,51 @@ export default {
 			errorMessage: null,
 			userExists: null,
 			twoFactorCode: null,
-			progressErrorCount: 0,
-			findingClosestServer: false,
-			closestCluster: null,
-			subdomain: '',
+			invitationToTeam: null,
+			isInvitation: null,
+			oauthSignup: 0,
 			oauthDomain: false,
 			country: null,
 			invitedBy: null,
 			invitedByParentTeam: false,
-			countries: [], 
+			countries: [],
+			saasProduct: null,
 			signupValues: {},
 			baseOrgOptions:[],
 			selectedOrg: null,
 			orgMap: {}, 
 			phone: null,
-			domain_rq: null,
 		};
 	},
 	resources: {
-		siteRequest() {
-			return {
-				url: 'press.api.product_trial.get_request',
-				params: {
-					product: this.productId,
-					account_request: this.$team.doc.account_request,
-				},
-				auto: !!this.saasProduct,
-				initialData: {},
-				onSuccess: (data) => {
-					if (data?.status !== 'Pending') {
-						this.$router.push({
-							name: 'SignupLoginToSite',
-							params: { productId: this.productId },
-							query: {
-								product_trial_request: data.name,
-							},
-						});
-					}
-				},
-				onError(error) {
-					toast.error(error.messages.join('\n'));
-				},
-			};
-		},
-		createSite() {
-			return {
-				url: 'press.api.client.run_doc_method',
-				makeParams: () => {
-					return {
-						dt: 'Product Trial Request',
-						dn: this.$resources.siteRequest.data.name ,
-						method: 'create_site_hnt',
-						args: {
-							subdomain: this.subdomain,
-							cluster: this.closestCluster ?? 'Default',
-							email: this.email,
-							phone: this.phone,
-							base_org:this.selectedOrg.value,
-						},
-					};
-				},
-				auto: false,
-				onSuccess: (data) => {
-					this.$router.push({
-						name: 'SignupLoginToSite',
-						params: { productId: this.productId },
-						query: {
-							product_trial_request: this.$resources.siteRequest.data.name,
-						},
-					});
-				},
-				onError: (error) => {
-					if (error?.exc_type !== 'ValidationError') {
-						return;
-					}
-					let errorMessage = '';
-					if ((error?.messages ?? []).length) {
-						errorMessage = error?.messages?.[0];
-						toast.error(errorMessage);
-					}
-				}
-			};
-		},
-		saasProduct() {
-			return {
-				type: 'document',
-				doctype: 'Product Trial',
-				name: this.productId,
-				auto: true,
-			};
+		validateRequestKey() {
+				return {
+					url: 'press.api.account.validate_request_key',
+					params: {
+						key: this.requestKey,
+						timezone: window.Intl
+							? Intl.DateTimeFormat().resolvedOptions().timeZone
+							: null,
+					},
+					auto: true,
+					onSuccess(res) {
+						if (res && res.email) {
+							this.email = res.email;
+							this.firstName = res.first_name;
+							this.lastName = res.last_name;
+							this.country = res.country;
+							this.userExists = res.user_exists;
+							this.invitationToTeam = res.team;
+							this.invitedBy = res.invited_by;
+							this.isInvitation = res.is_invitation;
+							this.invitedByParentTeam = res.invited_by_parent_team;
+							this.oauthSignup = res.oauth_signup;
+							this.oauthDomain = res.oauth_domain;
+							this.countries = res.countries;
+							this.saasProduct = res.product_trial;
+						}
+					},
+				};
 		},
 		getBaseOrg()
 		{
@@ -337,65 +295,112 @@ export default {
 						}
 					},
 			}
-		}, 
+		},
+		setupAccount() {
+			return {
+				url: 'press.api.account.setup_account',
+				params: {
+					key: this.requestKey,
+					first_name: this.email,
+					last_name: this.email,
+					country: this.country,
+					is_invitation: this.isInvitation,
+					user_exists: this.userExists,
+					invited_by_parent_team: this.invitedByParentTeam,
+					oauth_signup: this.oauthSignup,
+					oauth_domain: this.oauthDomain,
+					base_org:this.selectedOrg.value,
+					phone: this.phone
+				},
+				onSuccess(message) {
+					console.log(message)
+					let path =  `/dashboard/create-site/${this.saasProduct.name}/login-to-site?product_trial_request=${message.message.rq_name}`;
+					// if (this.saasProduct) {
+					// 	path = `/dashboard/create-site/${this.saasProduct.name}/setup`;
+					// }
+					// if (this.isInvitation) {
+					// 	path = '/dashboard/sites';
+					// }
+					console.log("redirect to "+path)
+					window.location.href = path;
+				},
+				 onError: (error) => {
+					let errorMessage = '';
+					if ((error?.messages ?? []).length) {
+						errorMessage = error?.messages?.[0];
+						toast.error(errorMessage)
+						return
+					}
+					toast.error( "Tổ chức đã được sử dụng");  
+				}
+			};
+		},
+		is2FAEnabled() {
+			return {
+				url: 'press.api.account.is_2fa_enabled',
+			};
+		},
+		verify2FA() {
+			return {
+				url: 'press.api.account.verify_2fa',
+				onSuccess() {
+					this.$resources.setupAccount.submit();
+				},
+			};
+		},
 	},
 	computed: {
-		saasProduct() {
-			return this.$resources.saasProduct?.doc;
-		},
-		domain() {
-			return this.saasProduct?.domain;
+		is2FA() {
+			return (
+				this.$route.name === 'Setup Account' && this.$route.query.two_factor
+			);
 		},
 	},
 	methods: {
-		async createSite() {
-			await this.getClosestCluster();
-			return this.$resources.createSite.submit();
-		},
-		async getClosestCluster() {
-			if (this.closestCluster) return this.closestCluster;
-			let proxyServers = Object.keys(this.saasProduct.proxy_servers);
-			if (proxyServers.length > 0) {
-				this.findingClosestServer = true;
-				let promises = proxyServers.map((server) => this.getPingTime(server));
-				let results = await Promise.allSettled(promises);
-				let fastestServer = results.reduce((a, b) =>
-					a.value.pingTime < b.value.pingTime ? a : b,
+		submitForm() {
+			if (this.invitedBy) {
+				this.$resources.is2FAEnabled.submit(
+					{
+						user: this.email,
+					},
+					{
+						onSuccess: (two_factor_enabled) => {
+							if (two_factor_enabled) {
+								this.$router.push({
+									name: 'Setup Account',
+									query: {
+										...this.$route.query,
+										two_factor: 1,
+									},
+								});
+							} else {
+								this.$resources.setupAccount.submit();
+							}
+						},
+					},
 				);
-				let closestServer = fastestServer.value.server;
-				let closestCluster = this.saasProduct.proxy_servers[closestServer];
-				if (!this.closestCluster) {
-					this.closestCluster = closestCluster;
-				}
-				this.findingClosestServer = false;
+			} else {
+				this.$resources.setupAccount.submit();
 			}
-			return this.closestCluster;
 		},
-		async getPingTime(server) {
-			let pingTime = 999999;
-			try {
-				let t1 = new Date().getTime();
-				await fetch(`https://${server}`);
-				let t2 = new Date().getTime();
-				pingTime = t2 - t1;
-			} catch (error) {
-				console.warn(error);
-			}
-			return { server, pingTime };
-		}, 
 	},
 	watch: {
-  selectedOrg(code) { 
-	const rawMap = isProxy(this.orgMap) ? toRaw(this.orgMap) : this.orgMap; 
-	const org = this.orgMap[code.value]; 
-	if (!org) return;
-	this.agencyCode  = org.organization_code || '';
-	this.agencyName  = org.organization_name || '';
-	this.agencyType  = org.type || '';
-	this.agencyLevel = org.level || '';
-	this.province    = org.province || '';
-	this.commune     = org.commune || '';
-	this.domain_rq      = org.name_domain || '';
+  selectedOrg(code) {
+	console.log("code" + code.value)
+	const rawMap = isProxy(this.orgMap) ? toRaw(this.orgMap) : this.orgMap;
+// console.log('orgMap =', rawMap);         
+// console.dir(rawMap);
+// console.log('%o', rawMap);
+    const org = this.orgMap[code.value];
+	console.log("debug-=-- "+org);
+    if (!org) return;
+    this.agencyCode  = org.organization_code || '';
+    this.agencyName  = org.organization_name || '';
+    this.agencyType  = org.type || '';
+    this.agencyLevel = org.level || '';
+    this.province    = org.province || '';
+    this.commune     = org.commune || '';
+    this.domain      = org.name_domain || '';
   },
 },
 };

@@ -1,16 +1,58 @@
+<!-- loading -->
+
 <template>
 	<div
-		class="flex h-screen w-screen flex-col items-center justify-center bg-gray-600 bg-opacity-50"
-		v-if="$resources?.siteRequest?.doc?.status !== 'Error'"
-	>
-		<SignupSpinner />
-		<p class="text-white">
+		class="flex h-screen w-screen flex-col items-center justify-center bg-white-600 bg-opacity-50"
+			v-if="$resources?.siteRequest?.doc?.status !== 'Error'"
+		>
+	<div class="flex flex-col items-center mb-6">
+		<!-- <img src="/assets/logo.png" alt="nextGRP Logo" class="h-12 mb-2" /> --> 
+						<!-- <img
+							alt="nextGRP Logo" class="h-20 mb-2"
+							:src="saasProduct?.logo"
+						/>   -->
+						 <HNTLogo  class="h-[64px] w-[160px] mb-2" />
+		<h1 class="text-lg font-bold text-gray-800 text-center">
+			nextGRP - Tiên phong trong lĩnh vực công nghệ,<br />
+			đồng hành với Chính phủ, doanh nghiệp trong công cuộc chuyển đổi số
+		</h1>
+	</div>
+	<!-- <h1 class="text-black p-6">nextGrp - Tiên phong trong lĩnh vực công nghệ, đồng hành với Chính phủ, doanh nghiệp trong công cuộc chuyển đổi số</h1>
+		<SignupSpinner/> 
+		<p class="text-black">
 			{{
 				$resources?.siteRequest?.doc?.status === 'Site Created'
 					? 'Logging you in'
 					: 'Completing setup'
 			}}
-		</p>
+		</p> -->
+		<div class="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4 border border-gray-300">
+ 
+			<!-- Circular Progress Spinner -->
+			<div class="flex justify-center mb-6">
+				<div class="relative">
+					<div class="w-16 h-16 border-4 border-blue-200 rounded-full"></div>
+					<div class="absolute top-0 left-0 w-16 h-16 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+				</div>
+			</div>
+			
+			<!-- Title -->
+			<h2 class="text-xl font-semibold text-gray-800 text-center mb-6">
+				Cài đặt ứng dụng
+			</h2>
+			
+			<!-- Progress Bar Section -->
+			<div class="flex items-center space-x-4">
+				<span class="text-sm text-gray-600 whitespace-nowrap">Cài đặt ứng dụng</span>
+				<div class="flex-1 bg-gray-200 rounded-full h-2">
+					<div 
+						class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+						:style="{ width: progressCount + '%' }"
+					></div>
+				</div>
+				<span class="text-sm font-medium text-gray-800 whitespace-nowrap">{{ Math.round(progressCount) }}%</span>
+			</div>
+		</div>
 	</div>
 	<div class="flex h-screen overflow-hidden" v-else>
 		<div class="w-full overflow-auto">
@@ -117,7 +159,10 @@
 <script>
 import LoginBox from '../../components/auth/LoginBox.vue';
 import Spinner from '../../components/Spinner.vue';
+import Spinner2 from 'frappe-ui/src/components/Spinner.vue';
 import { Progress } from 'frappe-ui';
+import HNTLogo from '@/components/icons/HNTLogo.vue';
+
 
 export default {
 	name: 'SignupLoginToSite',
@@ -126,12 +171,14 @@ export default {
 		LoginBox,
 		Progress,
 		SignupSpinner: Spinner,
+		HNTLogo,
 	},
 	data() {
 		return {
 			product_trial_request: this.$route.query.product_trial_request,
 			progressCount: 0,
 			currentBuildStep: 'Preparing for build',
+			progressCount: 0
 		};
 	},
 	resources: {
@@ -151,7 +198,9 @@ export default {
 				realtime: true,
 				auto: true,
 				onSuccess(doc) {
-					if (doc.status == 'Site Created') this.loginToSite();
+					if (doc.status == 'Site Created'){
+						 this.loginToSite();
+					}
 					else if (
 						doc.status == 'Wait for Site' ||
 						doc.status == 'Prefilling Setup Wizard'
@@ -169,7 +218,7 @@ export default {
 							};
 						},
 						onSuccess: (data) => {
-							if (data.status === 'Site Created') {
+							if (data.status === 'Site Created') { 
 								return this.loginToSite();
 							}
 
@@ -197,23 +246,27 @@ export default {
 							) {
 								this.progressCount = Math.round(data.progress * 10) / 10;
 								setTimeout(() => {
-									if (
-										['Site Created', 'Error'].includes(
-											this.$resources.siteRequest.doc.status,
-										)
-									)
-										return;
+									const status = this.$resources.siteRequest.doc.status; 
+									if (status === 'Site Created') {
+										
+										window.open(`/dashboard/setup-success`, '_self');
+									} else {
+										this.$resources.siteRequest.getProgress.reload();
+									}
+									}, 2000);
 
-									this.$resources.siteRequest.getProgress.reload();
-								}, 2000);
 							}
 						},
 					},
 					getLoginSid: {
+						// method: 'get_login_sid',
+						// onSuccess(loginURL) {
+							// window.open(loginURL, '_self');
 						method: 'get_login_sid',
-						onSuccess(loginURL) {
-							window.open(loginURL, '_self');
+						onSuccess() {
+							this.$router.replace('/dashboard/setup-success'); // dùng replace để tránh quay lại trang trước
 						},
+						// },
 					},
 				},
 			};

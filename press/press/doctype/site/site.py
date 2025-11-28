@@ -501,10 +501,10 @@ class Site(Document, TagHelpers):
 			is_site_on_public_server = frappe.db.get_value("Server", self.server, "public")
 
 			# Don't allow free plan for non-system users
-			if not is_system_user():
-				is_plan_free = (plan.price_inr == 0 or plan.price_usd == 0) and not plan.dedicated_server_plan
-				if is_plan_free:
-					frappe.throw("You can't select a free plan!")
+			# if not is_system_user():
+			# 	is_plan_free = (plan.price_inr == 0 or plan.price_usd == 0) and not plan.dedicated_server_plan
+			# 	if is_plan_free:
+			# 		frappe.throw("You can't select a free plan!")
 
 			# If site is on public server, don't allow unlimited plans
 			if is_site_on_public_server and plan.dedicated_server_plan:
@@ -596,6 +596,18 @@ class Site(Document, TagHelpers):
 			config = {
 				"fc_communication_secret": self.saas_communication_secret,
 			}
+			user_create = frappe.session.user
+			frappe.set_user("Administrator")
+			release_group = frappe.get_value("Release Group",{"name":self.group},"*",as_dict= True)
+			try:
+				common_site_rows = frappe.db.get_list('Common Site Config', filters={'parent': release_group.name}, 
+										       fields=['*']   )
+				for row in common_site_rows:
+					common_cf = frappe.get_value("Common Site Config",{"name":row.name},"*",as_dict = True) 
+					config[common_cf.key] = common_cf.value
+			except KeyError:
+				common_site_rows = []
+			frappe.set_user(user_create)
 			if create_agent_job:
 				self.update_site_config(config)
 			else:

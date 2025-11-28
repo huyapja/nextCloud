@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:experimental
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV LANG C.UTF-8
 ENV DEBIAN_FRONTEND noninteractive
@@ -63,11 +63,13 @@ COPY --chown=root:root supervisord.conf /etc/supervisor/supervisord.conf
 
 # Install Redis from PPA
 RUN --mount=type=cache,target=/var/cache/apt curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
-  && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb focal main" | tee /etc/apt/sources.list.d/redis.list \
+ && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb jammy main" | tee /etc/apt/sources.list.d/redis.list \
   && apt-get update \
   && apt-get install --yes --no-install-suggests --no-install-recommends \
   redis-server \
   && rm -rf /var/lib/apt/lists/* `#stage-pre-redis`
+
+
 
 # Install Python from DeadSnakes PPA
 ENV {{ doc.get_dependency_version("python", True) }}
@@ -80,8 +82,14 @@ RUN --mount=type=cache,target=/var/cache/apt add-apt-repository ppa:deadsnakes/p
     python${PYTHON_VERSION}-distutils \
     {%- endif %}
     python${PYTHON_VERSION}-venv \
-  && rm -rf /var/lib/apt/lists/* \
+  && rm -rf /var/lib/apt/lists/* \ 
   `#stage-pre-python`
+
+# Install libssl1.1 for wkhtmltopdf compatibility with Ubuntu 22.04
+RUN wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb \
+  && dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb \
+  && rm libssl1.1_1.1.1f-1ubuntu2_amd64.deb \
+  `#stage-pre-libssl`
 
 # Install wkhtmltopdf
 ENV {{ doc.get_dependency_version("wkhtmltopdf", True) }}
@@ -173,9 +181,9 @@ RUN  --mount=type=cache,target=/var/cache/apt {{ p.after_install }} \
 
 {% endfor %}
 
-
 # symlink mysqldump to mariadb-dump
-RUN ln -s /usr/bin/mysqldump /usr/bin/mariadb-dump
+RUN rm -f /usr/bin/mariadb-dump && ln -s /usr/bin/mysqldump /usr/bin/mariadb-dump
+#RUN ln -s /usr/bin/mysqldump /usr/bin/mariadb-dump
 
 # Switch to frappe
 USER frappe

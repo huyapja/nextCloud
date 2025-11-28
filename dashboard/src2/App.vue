@@ -6,7 +6,7 @@
 					v-if="!isSignupFlow && !$isMobile && !isHideSidebar"
 					class="relative block min-h-0 flex-shrink-0 overflow-hidden hover:overflow-auto"
 				>
-					<AppSidebar v-if="$session.user" />
+					<AppSidebar v-if="$session.user && $route.path !== '/setup-success'"  />
 				</div>
 				<div class="w-full overflow-auto" id="scrollContainer">
 					<MobileNav
@@ -51,7 +51,7 @@ const MobileNav = defineAsyncComponent(
 
 const route = useRoute();
 const team = getTeam();
-
+console.log('router: ', route.path)
 const isHideSidebar = computed(() => {
 	const alwaysHideSidebarRoutes = [
 		'Site Login',
@@ -89,6 +89,10 @@ watch(
 			window.location.pathname.startsWith('/dashboard/site-login') ||
 			window.location.pathname.startsWith('/dashboard/signup');
 	},
+	 () => route.path,
+		(newPath) => {
+			console.log('Route changed:', newPath)
+		},
 );
 
 provide('team', team);

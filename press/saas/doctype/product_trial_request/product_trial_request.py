@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 from __future__ import annotations
-
+from nextgrp.nextgrp.doctype.organization.organization_press import send_org
 import urllib
 import urllib.parse
 from contextlib import suppress
@@ -209,7 +209,103 @@ class ProductTrialRequest(Document):
 			self.save()
 
 	@dashboard_whitelist()
-	def get_progress(self, current_progress=None):  # noqa: C901
+	def create_site_hnt(self, subdomain: str, cluster: str | None = None, base_org=None,
+    phone=None,
+	email=None):
+		import json 
+		def coerce_link(val):
+			if isinstance(val, str):
+				# có thể là JSON string {"label": "...", "value": "..."}
+				try:
+					parsed = frappe.parse_json(val)
+					if isinstance(parsed, dict):
+						return parsed.get("value") or parsed.get("name") or parsed.get("label") or val
+					return val
+				except Exception:
+					return val
+			if isinstance(val, dict):
+				return val.get("value") or val.get("name") or val.get("label")
+			return val 
+		def extract_subdomain(full_domain):
+			"""lay subdomain"""
+			parts = (full_domain or "").split(".")
+			if len(parts) < 3:
+				frappe.throw(f"Domain không hợp lệ: {full_domain}")
+			sub = ".".join(parts[:-2])
+			if not sub:
+				frappe.throw(f"Không trích xuất được subdomain từ: {full_domain}")
+			return sub
+		
+		#validate org
+		base_org = coerce_link(base_org)
+		if not base_org:
+			frappe.throw("Thiếu 'base_org' hợp lệ")
+		if frappe.db.exists("Organization", {"base_organization": base_org}):
+			frappe.throw("Tổ chức đã được đăng ký")
+		base_organization = frappe.get_doc("Base Organization", base_org)
+		subdomain = extract_subdomain(base_organization.name_domain)
+		"""
+		Trigger the site creation process for the product trial request.
+		Args:
+			subdomain (str): The subdomain for the new site.
+			cluster (str | None): The cluster to use for site creation.
+		"""
+		if self.status != "Pending":
+			return
+
+		if not subdomain:
+			frappe.throw("Subdomain is required to create a site.")
+
+		try:
+			product: ProductTrial = frappe.get_doc("Product Trial", self.product_trial)
+			self.status = "Wait for Site"
+			self.site_creation_started_on = now_datetime()
+			self.domain = f"{subdomain}.{product.domain}"
+			site, agent_job_name, is_standby_site = product.setup_trial_site(
+				subdomain=subdomain, team=self.team, cluster=cluster, account_request=self.account_request
+			)
+			self.agent_job = agent_job_name
+			self.site = site.name 
+			self.custom_email_request = email
+			self.save()
+
+			if is_standby_site:
+				self.prefill_setup_wizard_data()
+
+			user_mail = frappe.db.get_value("Team", self.team, "user")
+			frappe.get_doc(
+				{
+					"doctype": "Site User",
+					"site": site.name,
+					"user": user_mail,
+					"enabled": 1,
+				}
+			).insert(ignore_permissions=True)
+			
+			# tao org hnt
+			org = frappe.get_doc({
+				"doctype": "Organization",
+				"base_organization": base_org,
+				"email": email,
+				"phone": phone,
+				"site":base_organization.name_domain
+			})
+			org.insert(ignore_permissions=True)
+			# tao org 
+			# send_org(self.domain,self.name,email)
+		except frappe.exceptions.ValidationError:
+			raise
+		except Exception as e:
+			log_error(
+				title="Product Trial Request Site Creation Error",
+				data=e,
+				reference_doctype=self.doctype,
+				reference_name=self.name,
+			)
+			self.status = "Error"
+			self.save()
+	@dashboard_whitelist()
+	def get_progress(self, current_progress=None):  # noqa: C901  
 		current_progress = current_progress or 10
 		if self.agent_job:
 			filters = {"name": self.agent_job, "site": self.site}
@@ -221,13 +317,14 @@ class ProductTrialRequest(Document):
 			["name", "status", "job_type"],
 		)
 		if status == "Success":
-			if self.status == "Site Created":
+			if self.status == "Site Created": 
+				send_org(self.domain,self.name,self.custom_email_request)
 				return {"progress": 100}
-			if self.status == "Adding Domain":
+			if self.status == "Adding Domain":  
 				return {"progress": 90, "current_step": self.status}
 			return {"progress": 80, "current_step": self.status}
 
-		if status == "Running":
+		if status == "Running": 
 			steps = frappe.db.get_all(
 				"Agent Job Step",
 				filters={"agent_job": job_name},
@@ -240,7 +337,7 @@ class ProductTrialRequest(Document):
 			progress = (len(done) / steps_count) * 100
 			progress = max(progress, current_progress)
 			current_running_step = ""
-			for step in steps:
+			for step in steps: 
 				if step.status == "Running":
 					current_running_step = self.agent_job_step_to_frontend_step.get(job_type, {}).get(
 						step.step_name, step.step_name
@@ -248,7 +345,7 @@ class ProductTrialRequest(Document):
 					break
 			return {"progress": progress + 0.1, "current_step": current_running_step}
 
-		if self.status == "Error":
+		if self.status == "Error": 
 			return {"progress": current_progress, "error": True}
 
 		# If agent job is undelivered, pending
@@ -275,6 +372,7 @@ class ProductTrialRequest(Document):
 
 	@dashboard_whitelist()
 	def get_login_sid(self):
+		send_org(self.domain,self.name,self.custom_email_request)
 		site: Site = frappe.get_doc("Site", self.site)
 		redirect_to_after_login = frappe.db.get_value(
 			"Product Trial",

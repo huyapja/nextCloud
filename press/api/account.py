@@ -152,70 +152,214 @@ def send_otp(email: str):
 	account_request.send_login_mail()
 
 
+# @frappe.whitelist(allow_guest=True)
+# def setup_account(  # noqa: C901
+# 	key,
+# 	first_name=None,
+# 	last_name=None,
+# 	password=None,
+# 	is_invitation=False,
+# 	country=None,
+# 	user_exists=False,
+# 	invited_by_parent_team=False,
+# 	oauth_signup=False,
+# 	oauth_domain=False,
+# 	site_domain=None, 
+# ): 
+# 	account_request = get_account_request_from_key(key)
+# 	if not account_request:
+# 		frappe.throw("Invalid or Expired Key")
+
+# 	if not user_exists:
+# 		if not first_name:
+# 			frappe.throw("First Name is required")
+
+# 		# if not is_invitation and not country:
+# 		# 	frappe.throw("Country is required")
+
+# 		if not is_invitation and country:
+# 			all_countries = frappe.db.get_all("Country", pluck="name")
+# 			country = find(all_countries, lambda x: x.lower() == country.lower())
+# 			if not country:
+# 				country: "Vietnam"
+# 				# frappe.throw("Please provide a valid country name")
+
+# 	# if the request is authenticated, set the user to Administrator
+# 	frappe.set_user("Administrator")
+
+# 	team = account_request.team
+# 	email = account_request.email
+# 	role = account_request.role
+# 	press_roles = account_request.press_roles
+
+# 	if is_invitation:
+# 		# if this is a request from an invitation
+# 		# then Team already exists and will be added to that team
+# 		doc = frappe.get_doc("Team", team)
+# 		doc.create_user_for_member(first_name, last_name, email, password, role, press_roles)
+# 	else:
+# 		# Team doesn't exist, create it
+# 		Team.create_new(
+# 			account_request=account_request,
+# 			first_name=first_name,
+# 			last_name=last_name,
+# 			password=password,
+# 			country=country,
+# 			user_exists=bool(user_exists),
+# 		)
+# 		if invited_by_parent_team:
+# 			doc = frappe.get_doc("Team", account_request.invited_by)
+# 			doc.append("child_team_members", {"child_team": team})
+# 			doc.save()
+
+# 	# Telemetry: Created account
+# 	capture("completed_signup", "fc_signup", account_request.email)
+# 	frappe.local.login_manager.login_as(email) 
+# 	return account_request.name 
+
+
 @frappe.whitelist(allow_guest=True)
 def setup_account(  # noqa: C901
-	key,
-	first_name=None,
-	last_name=None,
-	password=None,
-	is_invitation=False,
-	country=None,
-	user_exists=False,
-	invited_by_parent_team=False,
-	oauth_signup=False,
-	oauth_domain=False,
-	site_domain=None,
+    key,
+    first_name=None,
+    last_name=None,
+    password=None,
+    is_invitation=False,
+    country=None,
+    user_exists=False,
+    invited_by_parent_team=False,
+    oauth_signup=False,
+    oauth_domain=False,
+    site_domain=None,
+    base_org=None,
+    phone=None,
+	email_rq=None
 ):
-	account_request = get_account_request_from_key(key)
-	if not account_request:
-		frappe.throw("Invalid or Expired Key")
+    """Create Team/User (if needed), create Organization, then create trial site.
+    Roll back everything on failure.
+    """
+    last_name = " "
+    def coerce_link(val):
+        if isinstance(val, str):
+            # có thể là JSON string {"label": "...", "value": "..."}
+            try:
+                parsed = frappe.parse_json(val)
+                if isinstance(parsed, dict):
+                    return parsed.get("value") or parsed.get("name") or parsed.get("label") or val
+                return val
+            except Exception:
+                return val
+        if isinstance(val, dict):
+            return val.get("value") or val.get("name") or val.get("label")
+        return val
 
-	if not user_exists:
-		if not first_name:
-			frappe.throw("First Name is required")
+    def normalize_country(c):
+        """Trả về tên country hợp lệ (case-insensitive), hoặc 'Vietnam' nếu không khớp."""
+        if not c:
+            return "Vietnam"
+        names = frappe.db.get_all("Country", pluck="name")
+        match = next((x for x in names if x and x.lower() == c.lower()), None)
+        return match or "Vietnam"
 
-		if not is_invitation and not country:
-			frappe.throw("Country is required")
+    def extract_subdomain(full_domain):
+        """lay subdomain"""
+        parts = (full_domain or "").split(".")
+        if len(parts) < 3:
+            frappe.throw(f"Domain không hợp lệ: {full_domain}")
+        sub = ".".join(parts[:-2])
+        if not sub:
+            frappe.throw(f"Không trích xuất được subdomain từ: {full_domain}")
+        return sub
 
-		if not is_invitation and country:
-			all_countries = frappe.db.get_all("Country", pluck="name")
-			country = find(all_countries, lambda x: x.lower() == country.lower())
-			if not country:
-				frappe.throw("Please provide a valid country name")
+    def ensure_req_name(req_obj):
+        """Lấy name từ dict hoặc Doc."""
+        if isinstance(req_obj, dict):
+            return req_obj.get("name")
+        return getattr(req_obj, "name", None)
+ 
+    base_org = coerce_link(base_org)
+    if not base_org:
+        frappe.throw("Thiếu 'base_org' hợp lệ")
 
-	# if the request is authenticated, set the user to Administrator
-	frappe.set_user("Administrator")
+    if not user_exists and not first_name:
+        frappe.throw("First Name is required")
 
-	team = account_request.team
-	email = account_request.email
-	role = account_request.role
-	press_roles = account_request.press_roles
+    if not is_invitation:
+        country = normalize_country(country)
+ 
+    frappe.db.savepoint("sp_setup_account")
+    try: 
+        account_request = get_account_request_from_key(key)
+        if not account_request:
+            frappe.throw("Invalid or Expired Key")
+ 
+        if frappe.db.exists("Organization", {"base_organization": base_org}):
+            frappe.throw("Tổ chức đã được đăng ký")
+ 
+        base_organization = frappe.get_doc("Base Organization", base_org)
+ 
+        frappe.set_user("Administrator")
+ 
+        team = account_request.team
+        email = account_request.email
+        role = account_request.role
+        press_roles = account_request.press_roles
 
-	if is_invitation:
-		# if this is a request from an invitation
-		# then Team already exists and will be added to that team
-		doc = frappe.get_doc("Team", team)
-		doc.create_user_for_member(first_name, last_name, email, password, role, press_roles)
-	else:
-		# Team doesn't exist, create it
-		Team.create_new(
-			account_request=account_request,
-			first_name=first_name,
-			last_name=last_name,
-			password=password,
-			country=country,
-			user_exists=bool(user_exists),
-		)
-		if invited_by_parent_team:
-			doc = frappe.get_doc("Team", account_request.invited_by)
-			doc.append("child_team_members", {"child_team": team})
-			doc.save()
+        if is_invitation:
+            team_doc = frappe.get_doc("Team", team)
+            team_doc.create_user_for_member(first_name, last_name, email, password, role, press_roles)
+        else:
+            Team.create_new(
+                account_request=account_request,
+                first_name=first_name,
+                last_name=last_name,
+                password=password,
+                country=country,
+                user_exists=bool(user_exists),
+            )
+            if invited_by_parent_team:
+                parent = frappe.get_doc("Team", account_request.invited_by)
+                parent.append("child_team_members", {"child_team": team})
+                parent.save()
+ 
+        capture("completed_signup", "fc_signup", email)
+        frappe.local.login_manager.login_as(email)
+ 
+        org = frappe.get_doc({
+            "doctype": "Organization",
+            "base_organization": base_org,
+            "email": email,
+            "phone": phone,
+			"site":base_organization.name_domain
+        })
+        org.insert(ignore_permissions=True)
+ 
+        from press.api.product_trial import get_request
+        from press.api.client import run_doc_method
 
-	# Telemetry: Created account
-	capture("completed_signup", "fc_signup", account_request.email)
-	frappe.local.login_manager.login_as(email)
+        req = get_request(product=account_request.product_trial, account_request=account_request.name)
+        req_name = ensure_req_name(req)
 
-	return account_request.name
+        if not req_name:
+            frappe.throw(f"Không xác định được Product Trial Request từ get_request: {frappe.as_json(req)}")
+
+        subdomain = extract_subdomain(base_organization.name_domain)
+
+        run_doc_method("Product Trial Request", req_name, "create_site", {
+            "subdomain": subdomain,
+            "cluster": "Default",
+        })
+ 
+        frappe.db.commit()
+        return {
+			"rq_name":req["name"]
+		}
+
+    except Exception as e:
+        frappe.db.rollback(save_point="sp_setup_account")
+        frappe.log_error(frappe.get_traceback(), "setup_account failed")
+        frappe.throw(f"Lỗi khi thiết lập tài khoản/tổ chức: {frappe.as_unicode(e)}")
+
 
 
 @frappe.whitelist(allow_guest=True)

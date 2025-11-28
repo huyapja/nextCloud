@@ -20,13 +20,7 @@
 						><div
 							xmlns="http://www.w3.org/1999/xhtml"
 							style="
-								background: conic-gradient(
-									from 90deg,
-									rgba(255, 255, 255, 0.0018) 0deg,
-									rgba(255, 255, 255, 1) 260.571deg,
-									rgba(255, 255, 255, 0) 359.525deg,
-									rgba(255, 255, 255, 0.0018) 360deg
-								);
+								background: black;
 								height: 100%;
 								width: 100%;
 								opacity: 1;

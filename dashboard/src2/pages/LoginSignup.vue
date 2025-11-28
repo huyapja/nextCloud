@@ -29,11 +29,12 @@
 										name: 'Login',
 										query: { ...$route.query, use_password: undefined },
 									}"
-									icon-left="mail"
+									icon-left="mail" 
 								>
 									Continue with verification code
 								</Button>
-								<Button
+								<!-- <Button
+									v-if="isLogin && !usePassword"
 									:loading="$resources.googleLogin.loading"
 									@click="$resources.googleLogin.submit()"
 								>
@@ -41,7 +42,7 @@
 										<GoogleIcon class="w-4" />
 										<span class="ml-2">Continue with Google</span>
 									</div>
-								</Button>
+								</Button> -->
 							</div>
 						</div>
 						<form class="flex flex-col" @submit.prevent="submitForm">
@@ -68,6 +69,7 @@
 											totp_code: twoFactorCode,
 										})
 									"
+									theme="blue"
 								>
 									Verify
 								</Button>
@@ -82,7 +84,7 @@
 								<FormControl
 									label="Email"
 									type="email"
-									placeholder="johndoe@mail.com"
+									placeholder="nguyenvana@mail.com"
 									autocomplete="email"
 									v-model="email"
 									variant="outline"
@@ -147,6 +149,7 @@
 										class="mt-4"
 										variant="solid"
 										:loading="$session.login.loading"
+										theme="blue"
 									>
 										Log In
 									</Button>
@@ -180,6 +183,7 @@
 												variant="outline"
 												:disabled="otpResendCountdown > 0"
 												@click="$resources.sendOTP.submit()"
+												theme="blue"
 											>
 												Resend verification code
 												{{
@@ -198,6 +202,7 @@
 											:loading="$resources.sendOTP.loading"
 											variant="solid"
 											@click="$resources.sendOTP.submit()"
+												theme="blue"
 										>
 											Send verification code
 										</Button>
@@ -238,6 +243,7 @@
 									class="mt-4"
 									:loading="$resources.signup.loading"
 									variant="solid"
+									 theme="blue"
 								>
 									Sign up with email
 								</Button>
@@ -249,7 +255,7 @@
 							class="mt-4 flex flex-col"
 							v-if="!hasForgotPassword && !isOauthLogin && !is2FA"
 						>
-							<div v-if="$route.name === 'Signup'">
+							<!-- <div v-if="$route.name === 'Signup'">
 								<span class="text-base font-normal text-gray-600">
 									{{ 'By signing up, you agree to our ' }}
 								</span>
@@ -259,8 +265,8 @@
 								>
 									Terms & Policies
 								</a>
-							</div>
-							<div v-if="!(otpRequested || resetPasswordEmailSent)">
+							</div> -->
+							<!-- <div v-if="!(otpRequested || resetPasswordEmailSent)">
 								<span class="text-base font-normal text-gray-600">
 									{{
 										$route.name == 'Login'
@@ -279,7 +285,7 @@
 										$route.name == 'Login' ? 'Create a new account.' : 'Log in.'
 									}}
 								</router-link>
-							</div>
+							</div> -->
 						</div>
 					</div>
 					<div v-else-if="otpRequested">
@@ -312,6 +318,7 @@
 								variant="solid"
 								:loading="$resources.verifyOTP.loading"
 								@click="$resources.verifyOTP.submit()"
+								theme="blue"
 							>
 								Verify
 							</Button>
@@ -330,7 +337,9 @@
 								}}
 							</Button>
 						</form>
-						<div class="mt-4 space-y-2">
+
+						<!-- comment verfycode -->
+						<!-- <div class="mt-4 space-y-2">
 							<div v-if="$route.name === 'Signup'">
 								<span class="text-base font-normal text-gray-600">
 									{{ 'By signing up, you agree to our ' }}
@@ -362,7 +371,7 @@
 									}}
 								</router-link>
 							</div>
-						</div>
+						</div> -->
 					</div>
 					<div
 						class="text-p-base text-gray-700"
@@ -375,14 +384,14 @@
 						</p>
 					</div>
 				</template>
-				<template v-slot:logo v-if="saasProduct">
-					<div class="flex space-x-2">
+				<!-- <template v-slot:logo v-if="saasProduct">
+					<div class="flex flex-col items-center">
 						<img
-							class="inline-block h-[38px] w-[38px] rounded-sm"
+							class="inline-block h-[150px] w-[150px] rounded-sm"
 							:src="saasProduct?.logo"
 						/>
 					</div>
-				</template>
+				</template> -->
 			</LoginBox>
 		</div>
 	</div>
@@ -437,10 +446,11 @@ export default {
 					product: this.$route.query.product,
 				},
 				onSuccess(account_request) {
-					this.account_request = account_request;
-					this.otpRequested = true;
-					this.otpResendCountdown = 30;
-					toast.success('Verification code sent to your email');
+					// this.account_request = account_request;
+					// this.otpRequested = true;
+					// this.otpResendCountdown = 30;
+					// toast.success('Verification code sent to your email');
+					toast.error('Vui lòng sử dụng tài khoản của Hải Nam Tech')
 				},
 				onError: (error) => {
 					if (error?.exc_type !== 'ValidationError') {
@@ -478,7 +488,9 @@ export default {
 					otp: this.otp,
 				},
 				onSuccess(key) {
-					window.open(`/dashboard/setup-account/${key}`, '_self');
+					// sau buoc setup account 
+					// window.open(`/dashboard/setup-account/${key}`, '_self');
+					window.open(`/dashboard/setup-org/${key}`, '_self');
 				},
 			};
 		},
@@ -786,15 +798,17 @@ export default {
 			if (this.hasForgotPassword) {
 				return 'Reset password';
 			} else if (this.otpRequested) {
-				return 'Verify your email address';
+				// return 'Verify your email address';
+				return `${this.saasProduct.title} `;
 			} else if (this.isLogin) {
 				if (this.saasProduct) {
-					return `Log in to your account to start using ${this.saasProduct.title}`;
+					// return `Log in to your account to start using ${this.saasProduct.title}`;
 				}
-				return 'Log in to your account';
+				// return 'Log in to your account';
+				return `nextGRP - Tiên phong trong lĩnh vực công nghệ, đồng hành với Chính phủ, doanh nghiệp trong công cuộc chuyển đổi số`
 			} else {
 				if (this.saasProduct) {
-					return `Sign up to create your ${this.saasProduct.title} site`;
+					return `${this.saasProduct.title}`;
 				}
 
 				return 'Create your Frappe Cloud account';
@@ -805,9 +819,11 @@ export default {
 				return 'Enter your email address to reset your password';
 			} else {
 				if (this.saasProduct) {
-					return `Get started and explore the easiest way to use ${this.saasProduct.title}`;
+					// return `Get started and explore the easiest way to use ${this.saasProduct.title}`;
+					return ''
 				}
-				return 'Get started and explore the easiest way to use all Frappe apps';
+				// return 'Get started and explore the easiest way to use all Frappe apps';
+				return '';
 			}
 		},
 	},

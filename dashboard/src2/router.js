@@ -285,6 +285,13 @@ let router = createRouter({
 			],
 		},
 		{
+					name: 'SetupSuccess',
+					path: '/setup-success',
+					component: () => import('./pages/SetupSuccess.vue'),
+					props: true,
+					meta: { hideSidebar: false },
+				},
+		{
 			name: 'Impersonate',
 			path: '/impersonate/:teamId',
 			component: () => import('./pages/Impersonate.vue'),
@@ -337,6 +344,23 @@ let router = createRouter({
 			name: '404',
 			component: () => import('../src/views/general/404.vue'),
 		},
+		{
+			path: '/setup-org/:requestKey/:joinRequest?',
+			name: 'SetupOrg',
+			component: () => import('./pages/SetupOrg.vue'),
+			props: true,
+			meta: { isLoginPage: true },
+		}
+		// ,
+		// {
+		// 	name: 'Signup Create Site',
+		// 	path: '/create-site/:productId/setup', 
+		// 	component: () => import('./pages/signup/SetupSite.vue'),
+		// 	props: true,
+		// 	meta: { hideSidebar: true }
+		// }
+		
+		
 	],
 });
 
