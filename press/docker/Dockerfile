@@ -82,7 +82,7 @@ RUN --mount=type=cache,target=/var/cache/apt add-apt-repository ppa:deadsnakes/p
     python${PYTHON_VERSION}-distutils \
     {%- endif %}
     python${PYTHON_VERSION}-venv \
-  && rm -rf /var/lib/apt/lists/* \ 
+  && rm -rf /var/lib/apt/lists/* \
   `#stage-pre-python`
 
 # Install libssl1.1 for wkhtmltopdf compatibility with Ubuntu 22.04
@@ -182,7 +182,15 @@ RUN  --mount=type=cache,target=/var/cache/apt {{ p.after_install }} \
 {% endfor %}
 
 # symlink mysqldump to mariadb-dump
-RUN rm -f /usr/bin/mariadb-dump && ln -s /usr/bin/mysqldump /usr/bin/mariadb-dump
+RUN --mount=type=cache,target=/var/cache/apt apt-get update \
+  && apt-get install --reinstall --yes --no-install-suggests --no-install-recommends \
+  mariadb-client-core-10.6 \
+  mariadb-client-10.6 \
+  # Đảm bảo lệnh mysqldump trỏ đúng về mariadb-dump
+  && rm -f /usr/bin/mysqldump \
+  && ln -s /usr/bin/mariadb-dump /usr/bin/mysqldump \
+  # Dọn dẹp cache để giảm dung lượng image
+  && rm -rf /var/lib/apt/lists/*
 #RUN ln -s /usr/bin/mysqldump /usr/bin/mariadb-dump
 
 # Switch to frappe
