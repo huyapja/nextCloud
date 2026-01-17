@@ -1,17 +1,14 @@
-# Copyright (c) 2023, Frappe and contributors
-# For license information, please see license.txt
-
 from __future__ import annotations
-from nextgrp.nextgrp.doctype.organization.organization_press import send_org
+from nextgrp.nextgrp.doctype.organization.organization_press import send_org # type: ignore
 import urllib
 import urllib.parse
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
-import frappe
-from frappe.model.document import Document
-from frappe.utils.data import add_to_date, now_datetime
-from frappe.utils.telemetry import init_telemetry
+import frappe # type: ignore
+from frappe.model.document import Document # type: ignore
+from frappe.utils.data import add_to_date, now_datetime # type: ignore
+from frappe.utils.telemetry import init_telemetry # type: ignore
 
 from press.api.client import dashboard_whitelist
 from press.utils import log_error
@@ -22,13 +19,11 @@ if TYPE_CHECKING:
 
 
 class ProductTrialRequest(Document):
-	# begin: auto-generated types
-	# This code is auto-generated. Do not modify anything in this block.
 
 	from typing import TYPE_CHECKING
 
 	if TYPE_CHECKING:
-		from frappe.types import DF
+		from frappe.types import DF # type: ignore
 
 		account_request: DF.Link | None
 		agent_job: DF.Link | None
@@ -38,13 +33,13 @@ class ProductTrialRequest(Document):
 		site_creation_completed_on: DF.Datetime | None
 		site_creation_started_on: DF.Datetime | None
 		status: DF.Literal[
-			"Pending",
-			"Wait for Site",
-			"Prefilling Setup Wizard",
-			"Adding Domain",
-			"Site Created",
-			"Error",
-			"Expired",
+			"Pending", # type: ignore
+			"Wait for Site", # type: ignore
+			"Prefilling Setup Wizard", # type: ignore
+			"Adding Domain", # type: ignore
+			"Site Created", # type: ignore
+			"Error", # type: ignore
+			"Expired", # type: ignore
 		]
 		team: DF.Link | None
 	# end: auto-generated types
@@ -104,8 +99,6 @@ class ProductTrialRequest(Document):
 				case "Site Created":
 					self.capture_posthog_event("product_trial_request_site_created")
 
-					# this is to create a webhook record in the site
-					# so that the user records can be synced with press
 					site: Site = frappe.get_doc("Site", self.site)
 					site.create_sync_user_webhook()
 
@@ -145,8 +138,6 @@ class ProductTrialRequest(Document):
 					"time_zone": timezone,
 					"language": "en",
 					"currency": team_details.currency,
-					# setup wizard will override currency anyway
-					# but adding this since ERPNext will throw an error otherwise
 				}
 			)
 		except Exception as e:
@@ -215,7 +206,6 @@ class ProductTrialRequest(Document):
 		import json
 		def coerce_link(val):
 			if isinstance(val, str):
-				# có thể là JSON string {"label": "...", "value": "..."}
 				try:
 					parsed = frappe.parse_json(val)
 					if isinstance(parsed, dict):
@@ -348,7 +338,6 @@ class ProductTrialRequest(Document):
 		if self.status == "Error":
 			return {"progress": current_progress, "error": True}
 
-		# If agent job is undelivered, pending
 		return {"progress": current_progress + 0.1}
 
 	def prefill_setup_wizard_data(self):
@@ -380,8 +369,6 @@ class ProductTrialRequest(Document):
 			"redirect_to_after_login",
 		)
 		if site.additional_system_user_created and site.setup_wizard_complete:
-			# go to setup wizard as admin only
-			# they'll log in as user after setup wizard
 			email = frappe.db.get_value("Team", self.team, "user")
 			sid = site.get_login_sid(user=email)
 			return f"https://{self.domain}{redirect_to_after_login}?sid={sid}"
@@ -395,14 +382,9 @@ def get_app_trial_page_url():
 	if not referer:
 		return None
 	try:
-		# parse the referer url
 		site = urllib.parse.urlparse(referer).hostname
-		# check if any product trial request exists for the site
 		product_trial_name = frappe.db.get_value("Product Trial Request", {"site": site}, "product_trial")
 		if product_trial_name:
-			# Check site status
-			# site_status = frappe.db.get_value("Site", site, "status")
-			# if site_status in ("Active", "Inactive", "Suspended"):
 			return f"/dashboard/signup?product={product_trial_name}"
 	except Exception:
 		frappe.log_error(title="App Trial Page URL Error")

@@ -1,13 +1,11 @@
 <template>
-	<div class="flex h-screen overflow-hidden">
+<div
+		class="flex h-screen overflow-hidden"
+	>
 		<div class="w-full overflow-auto">
 			<SetupOrgBox
-				:title="
-					invitedBy
-						? 'Invitation to join'
-						: `Thiết lập thông tin tổ chức của bạn`
-				"
-				:subtitle="invitedBy ? `Invitation by ${invitedBy}` : ''"
+				:title="invitedBy ? 'Invitation to join' :  `Thiết lập thông tin tổ chức của bạn`"
+				:subtitle="invitedBy ? `Invitation by ${invitedBy}` :''"
 			>
 				<!-- <template v-slot:logo>
 					<div class="flex flex-col items-center">
@@ -19,12 +17,6 @@
 					</div>
 					</div>
 				</template> -->
-				<!-- FLOW TẠO SITE ĐÃ BỊ XÓA - ĐANG XÂY DỰNG LẠI -->
-				<div class="mt-6 flex flex-col items-center justify-center p-8">
-					<p class="mb-4 text-lg text-gray-600">Flow tạo site đã bị xóa bỏ</p>
-					<p class="text-sm text-gray-500">Đang xây dựng lại flow mới...</p>
-				</div>
-				<!--
 				<form class="mt-6 flex flex-col" @submit.prevent="createSite">
 					<template v-if="is2FA">
 						<FormControl
@@ -70,7 +62,8 @@
 									/>
 								</div>
 
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<!-- loai co quan cap  -->
+								 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<FormControl
 										label="Loại Cơ Quan"
 										type="text"
@@ -91,6 +84,7 @@
 									/>
 								</div>
 
+								<!-- tinh/thanh pho , xa/phuong -->
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<FormControl
 										label="Tỉnh/Thành phố"
@@ -112,6 +106,7 @@
 									/>
 								</div>
 
+								<!-- ten domain , email dang nhap  -->
 								 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<FormControl
 										label="Tên domain"
@@ -132,6 +127,7 @@
 										required
 									/>
 								</div>
+								<!-- so dtien thoa -->
 
 								 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<FormControl
@@ -145,8 +141,32 @@
 
 									/>
 								</div>
+
+							<!-- <FormControl
+								type="select"
+								:options="countries"
+								v-if="!isInvitation"
+								label="Country"
+								v-model="country"
+								variant="outline"
+								required
+							/> -->
 						</div>
+						<!-- <ErrorMessage
+							class="mt-4"
+							:message="$resources.setupAccount?.error || ''"
+						/> -->
 						<div class="mt-4 flex justify-center">
+							<!-- <Button
+							class="mt-4 p-4 pr-8 pl-8"
+							variant="solid"
+							:loading="$resources.setupAccount?.loading"
+							theme="blue"
+						>
+							{{
+								is2FA ? 'Verify' : isInvitation ? 'Accept' : 'Tạo tổ chức'
+							}}
+						</Button> -->
 						<Button
 												class="mt-4 p-4 pr-8 pl-8"
 												variant="solid"
@@ -158,7 +178,6 @@
 						</div>
 					</template>
 				</form>
-				-->
 				<!-- <div class="mt-4" v-if="!is2FA && !isInvitation">
 					<span class="text-base font-normal text-gray-600">
 						{{ 'By signing up, you agree to our ' }}
@@ -175,9 +194,12 @@
 	</div>
 </template>
 <script>
-import Form from '@/components/Form.vue';
-import Link from '@/components/Link.vue';
 import SetupOrgBox from '../../components/auth/SetupOrgBox.vue';
+import Link from '@/components/Link.vue';
+import Form from '@/components/Form.vue';
+import { DashboardError } from '../../utils/error';
+import { toRaw, isProxy } from 'vue';
+import {toast} from 'vue-sonner';
 
 export default {
 	name: 'SignupSetup',
@@ -205,7 +227,7 @@ export default {
 			invitedByParentTeam: false,
 			countries: [],
 			signupValues: {},
-			baseOrgOptions: [],
+			baseOrgOptions:[],
 			selectedOrg: null,
 			orgMap: {},
 			phone: null,
@@ -213,8 +235,6 @@ export default {
 		};
 	},
 	resources: {
-		// FLOW TẠO SITE ĐÃ BỊ XÓA
-		/*
 		siteRequest() {
 			return {
 				url: 'press.api.product_trial.get_request',
@@ -304,11 +324,20 @@ export default {
 										value: o.name,
 									};
 							});
+							// res.forEach(element => {
+
+								// this.baseOrgOptions.push(
+								// 	{
+								// 		label: element.organization_code,
+								// 		value: element.name,
+								// 		...element
+								// 	}
+								// )
+							// });
 						}
 					},
 			}
 		},
-		*/
 	},
 	computed: {
 		saasProduct() {
@@ -319,8 +348,6 @@ export default {
 		},
 	},
 	methods: {
-		// FLOW TẠO SITE ĐÃ BỊ XÓA
-		/*
 		async createSite() {
 			await this.getClosestCluster();
 			return this.$resources.createSite.submit();
@@ -356,11 +383,8 @@ export default {
 			}
 			return { server, pingTime };
 		},
-		*/
 	},
 	watch: {
-		// FLOW TẠO SITE ĐÃ BỊ XÓA
-		/*
   selectedOrg(code) {
 	const rawMap = isProxy(this.orgMap) ? toRaw(this.orgMap) : this.orgMap;
 	const org = this.orgMap[code.value];
@@ -373,7 +397,6 @@ export default {
 	this.commune     = org.commune || '';
 	this.domain_rq      = org.name_domain || '';
   },
-  */
-	},
+},
 };
 </script>
