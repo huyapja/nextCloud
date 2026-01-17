@@ -241,9 +241,32 @@ class Bench(Document):
 			)
 
 	def validate(self):
+		# Chỉ set candidate khi document mới được tạo
+		if self.is_new() and not self.candidate:
+			candidates = frappe.get_all("Deploy Candidate", filters={"group": self.group})
+			if not candidates:
+				frappe.throw(
+					f"Không tìm thấy Deploy Candidate nào cho group '{self.group}'. "
+					"Vui lòng tạo Deploy Candidate trước khi tạo Bench.",
+					title="Deploy Candidate không tồn tại"
+				)
+			self.candidate = candidates[0].name
+
+		# Nếu document đã tồn tại nhưng không có candidate, báo lỗi
+		if not self.is_new() and not self.candidate:
+			frappe.throw(
+				f"Bench '{self.name}' không có Deploy Candidate được gán. "
+				"Vui lòng liên hệ quản trị viên để xử lý.",
+				title="Thiếu Deploy Candidate"
+			)
+
+		# Validate candidate tồn tại
 		if not self.candidate:
-			candidate = frappe.get_all("Deploy Candidate", filters={"group": self.group})[0]
-			self.candidate = candidate.name
+			frappe.throw(
+				"Bench phải có Deploy Candidate được gán.",
+				title="Thiếu Deploy Candidate"
+			)
+
 		candidate = frappe.get_doc("Deploy Candidate", self.candidate)
 
 		self.set_apps(candidate)
