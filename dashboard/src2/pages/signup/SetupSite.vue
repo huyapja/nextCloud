@@ -1,11 +1,13 @@
 <template>
-<div
-		class="flex h-screen overflow-hidden" 
-	>
+	<div class="flex h-screen overflow-hidden">
 		<div class="w-full overflow-auto">
 			<SetupOrgBox
-				:title="invitedBy ? 'Invitation to join' :  `Thiết lập thông tin tổ chức của bạn`"
-				:subtitle="invitedBy ? `Invitation by ${invitedBy}` :''"
+				:title="
+					invitedBy
+						? 'Invitation to join'
+						: `Thiết lập thông tin tổ chức của bạn`
+				"
+				:subtitle="invitedBy ? `Invitation by ${invitedBy}` : ''"
 			>
 				<!-- <template v-slot:logo>
 					<div class="flex flex-col items-center">
@@ -17,6 +19,12 @@
 					</div>
 					</div>
 				</template> -->
+				<!-- FLOW TẠO SITE ĐÃ BỊ XÓA - ĐANG XÂY DỰNG LẠI -->
+				<div class="mt-6 flex flex-col items-center justify-center p-8">
+					<p class="mb-4 text-lg text-gray-600">Flow tạo site đã bị xóa bỏ</p>
+					<p class="text-sm text-gray-500">Đang xây dựng lại flow mới...</p>
+				</div>
+				<!--
 				<form class="mt-6 flex flex-col" @submit.prevent="createSite">
 					<template v-if="is2FA">
 						<FormControl
@@ -41,15 +49,15 @@
 						<ErrorMessage class="mt-2" :message="$resources.verify2FA.error" />
 					</template>
 					<template v-else>
-						<div class="space-y-4"> 
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4"> 
+						<div class="space-y-4">
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<labeL class="block text-xs text-ink-gray-5 pb-[6px]">Mã Cơ quan</labeL>
 									<Autocomplete
 									v-model="selectedOrg"
-									:options="baseOrgOptions" 
-									placeholder="Chọn cơ quan..." 
-								/> 
+									:options="baseOrgOptions"
+									placeholder="Chọn cơ quan..."
+								/>
 								</div>
 									<FormControl
 										label="Tên Cơ Quan"
@@ -57,20 +65,19 @@
 										v-model="agencyName"
 										name="agencyName"
 										autocomplete="family-name"
-										variant="outline" 
+										variant="outline"
 										disabled
 									/>
 								</div>
 
-								<!-- loai co quan cap  -->
-								 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<FormControl
 										label="Loại Cơ Quan"
 										type="text"
 										v-model="agencyType"
 										name="agencyType"
 										autocomplete="given-name"
-										variant="outline" 
+										variant="outline"
 										disabled
 									/>
 									<FormControl
@@ -79,12 +86,11 @@
 										v-model="agencyLevel"
 										name="agencyLevel"
 										autocomplete="family-name"
-										variant="outline" 
+										variant="outline"
 									disabled
 									/>
 								</div>
 
-								<!-- tinh/thanh pho , xa/phuong -->
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<FormControl
 										label="Tỉnh/Thành phố"
@@ -92,7 +98,7 @@
 										v-model="province"
 										name="province"
 										autocomplete="given-name"
-										variant="outline" 
+										variant="outline"
 									disabled
 									/>
 									<FormControl
@@ -101,12 +107,11 @@
 										v-model="commune"
 										name="commune"
 										autocomplete="family-name"
-										variant="outline" 
+										variant="outline"
 										disabled
 									/>
 								</div>
 
-								<!-- ten domain , email dang nhap  -->
 								 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<FormControl
 										label="Tên domain"
@@ -127,7 +132,6 @@
 										required
 									/>
 								</div>
-								<!-- so dtien thoa -->
 
 								 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<FormControl
@@ -138,35 +142,11 @@
 										autocomplete="given-name"
 										variant="outline"
 										required
-									 
-									/> 
-								</div> 
-							
-							<!-- <FormControl
-								type="select"
-								:options="countries"
-								v-if="!isInvitation"
-								label="Country"
-								v-model="country"
-								variant="outline"
-								required
-							/> -->
+
+									/>
+								</div>
 						</div>
-						<!-- <ErrorMessage
-							class="mt-4"
-							:message="$resources.setupAccount?.error || ''"
-						/> -->
 						<div class="mt-4 flex justify-center">
-							<!-- <Button
-							class="mt-4 p-4 pr-8 pl-8"
-							variant="solid"
-							:loading="$resources.setupAccount?.loading"
-							theme="blue"
-						>
-							{{
-								is2FA ? 'Verify' : isInvitation ? 'Accept' : 'Tạo tổ chức'
-							}}
-						</Button> -->
 						<Button
 												class="mt-4 p-4 pr-8 pl-8"
 												variant="solid"
@@ -178,6 +158,7 @@
 						</div>
 					</template>
 				</form>
+				-->
 				<!-- <div class="mt-4" v-if="!is2FA && !isInvitation">
 					<span class="text-base font-normal text-gray-600">
 						{{ 'By signing up, you agree to our ' }}
@@ -191,15 +172,12 @@
 				</div> -->
 			</SetupOrgBox>
 		</div>
-	</div> 
+	</div>
 </template>
 <script>
-import SetupOrgBox from '../../components/auth/SetupOrgBox.vue';
-import Link from '@/components/Link.vue';
 import Form from '@/components/Form.vue';
-import { DashboardError } from '../../utils/error';
-import { toRaw, isProxy } from 'vue';
-import {toast} from 'vue-sonner';
+import Link from '@/components/Link.vue';
+import SetupOrgBox from '../../components/auth/SetupOrgBox.vue';
 
 export default {
 	name: 'SignupSetup',
@@ -208,7 +186,7 @@ export default {
 		SetupOrgBox,
 		Link,
 		Form,
-	}, 
+	},
 	data() {
 		return {
 			email: null,
@@ -225,16 +203,18 @@ export default {
 			country: null,
 			invitedBy: null,
 			invitedByParentTeam: false,
-			countries: [], 
+			countries: [],
 			signupValues: {},
-			baseOrgOptions:[],
+			baseOrgOptions: [],
 			selectedOrg: null,
-			orgMap: {}, 
+			orgMap: {},
 			phone: null,
 			domain_rq: null,
 		};
 	},
 	resources: {
+		// FLOW TẠO SITE ĐÃ BỊ XÓA
+		/*
 		siteRequest() {
 			return {
 				url: 'press.api.product_trial.get_request',
@@ -310,34 +290,25 @@ export default {
 		getBaseOrg()
 		{
 			return{
-				
-					url: 'nextgrp.nextgrp.doctype.organization.organization_press.get_org', 
+
+					url: 'nextgrp.nextgrp.doctype.organization.organization_press.get_org',
 					auto: true,
 					cache:true,
 					onSuccess(res) {
-						if (res) { 
+						if (res) {
 							const list = Array.isArray(res) ? res : (res?.message || []);
 							this.baseOrgOptions = list.map(o => {
-								this.orgMap[o.name] = o;        
+								this.orgMap[o.name] = o;
 							return {
 										label: o.organization_code,
-										value: o.name,               
+										value: o.name,
 									};
 							});
-							// res.forEach(element => {
-								
-								// this.baseOrgOptions.push(
-								// 	{
-								// 		label: element.organization_code,
-								// 		value: element.name,
-								// 		...element
-								// 	}
-								// )
-							// });
 						}
 					},
 			}
-		}, 
+		},
+		*/
 	},
 	computed: {
 		saasProduct() {
@@ -348,6 +319,8 @@ export default {
 		},
 	},
 	methods: {
+		// FLOW TẠO SITE ĐÃ BỊ XÓA
+		/*
 		async createSite() {
 			await this.getClosestCluster();
 			return this.$resources.createSite.submit();
@@ -382,12 +355,15 @@ export default {
 				console.warn(error);
 			}
 			return { server, pingTime };
-		}, 
+		},
+		*/
 	},
 	watch: {
-  selectedOrg(code) { 
-	const rawMap = isProxy(this.orgMap) ? toRaw(this.orgMap) : this.orgMap; 
-	const org = this.orgMap[code.value]; 
+		// FLOW TẠO SITE ĐÃ BỊ XÓA
+		/*
+  selectedOrg(code) {
+	const rawMap = isProxy(this.orgMap) ? toRaw(this.orgMap) : this.orgMap;
+	const org = this.orgMap[code.value];
 	if (!org) return;
 	this.agencyCode  = org.organization_code || '';
 	this.agencyName  = org.organization_name || '';
@@ -397,6 +373,7 @@ export default {
 	this.commune     = org.commune || '';
 	this.domain_rq      = org.name_domain || '';
   },
-},
+  */
+	},
 };
 </script>
