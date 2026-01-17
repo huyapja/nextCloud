@@ -252,13 +252,21 @@ class Bench(Document):
 				)
 			self.candidate = candidates[0].name
 
-		# Nếu document đã tồn tại nhưng không có candidate, báo lỗi
+		# Nếu document đã tồn tại nhưng không có candidate trong object,
+		# kiểm tra xem có candidate trong database không (có thể đã được set qua db.set_value)
 		if not self.is_new() and not self.candidate:
-			frappe.throw(
-				f"Bench '{self.name}' không có Deploy Candidate được gán. "
-				"Vui lòng liên hệ quản trị viên để xử lý.",
-				title="Thiếu Deploy Candidate"
-			)
+			# Kiểm tra candidate trong database
+			db_candidate = frappe.db.get_value("Bench", self.name, "candidate")
+			if db_candidate:
+				# Candidate đã có trong database, chỉ cần reload vào object
+				self.candidate = db_candidate
+			else:
+				# Thực sự không có candidate trong database
+				frappe.throw(
+					f"Bench '{self.name}' không có Deploy Candidate được gán. "
+					"Vui lòng liên hệ quản trị viên để xử lý.",
+					title="Thiếu Deploy Candidate"
+				)
 
 		# Validate candidate tồn tại
 		if not self.candidate:
