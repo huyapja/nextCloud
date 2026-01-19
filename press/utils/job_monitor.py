@@ -351,6 +351,124 @@ def auto_fix_stuck_jobs():
 
 
 @frappe.whitelist()
+def get_stuck_jobs_summary():
+    """
+    Lấy summary của stuck jobs để hiển thị trên UI
+    """
+    try:
+        # Tổng quan
+        pending_count = frappe.db.count(
+            "Agent Job",
+            {"status": "Pending"}
+        )
+        running_count = frappe.db.count(
+            "Agent Job",
+            {"status": "Running"}
+        )
+
+        servers_with_jobs = frappe.get_all(
+            "Agent Job",
+            filters={"status": ["in", ["Pending", "Running"]]},
+            fields=["server"],
+            distinct=True
+        )
+
+        # Nhóm theo job_type
+        all_jobs = frappe.get_all(
+            "Agent Job",
+            filters={"status": ["in", ["Pending", "Running"]]},
+            fields=["name", "job_type", "status", "server", "start", "creation"],
+        )
+
+        by_type = {}
+        by_server = {}
+
+        for job in all_jobs:
+            # By type
+            if job.job_type not in by_type:
+                by_type[job.job_type] = {"Pending": 0, "Running": 0, "total": 0}
+            by_type[job.job_type][job.status] = by_type[job.job_type].get(job.status, 0) + 1
+            by_type[job.job_type]["total"] += 1
+
+            # By server
+            if job.server not in by_server:
+                by_server[job.server] = {"Pending": 0, "Running": 0, "total": 0}
+            by_server[job.server][job.status] = by_server[job.server].get(job.status, 0) + 1
+            by_server[job.server]["total"] += 1
+
+        jobs_by_type = [
+            {
+                "job_type": job_type,
+                "pending": counts.get("Pending", 0),
+                "running": counts.get("Running", 0),
+                "total": counts["total"]
+            }
+            for job_type, counts in sorted(by_type.items())
+        ]
+
+        jobs_by_server = [
+            {
+                "server": server,
+                "pending": counts.get("Pending", 0),
+                "running": counts.get("Running", 0),
+                "total": counts["total"]
+            }
+            for server, counts in sorted(by_server.items())
+        ]
+
+        # Long running jobs (>1 hour)
+        from frappe.utils import now_datetime, get_datetime, add_to_date
+
+        one_hour_ago = add_to_date(now_datetime(), hours=-1)
+        long_running = frappe.get_all(
+            "Agent Job",
+            filters={
+                "status": "Running",
+                "start": ["<", one_hour_ago]
+            },
+            fields=["name", "job_type", "server", "start", "status"],
+            limit=20
+        )
+
+        long_running_jobs = []
+        for job_info in long_running:
+            if job_info.start:
+                start_time = get_datetime(job_info.start) if isinstance(job_info.start, str) else job_info.start
+                now = now_datetime()
+                if isinstance(now, str):
+                    now = get_datetime(now)
+                duration = now - start_time
+                hours = duration.total_seconds() / 3600
+
+                long_running_jobs.append({
+                    "name": job_info.name,
+                    "job_type": job_info.job_type,
+                    "server": job_info.server,
+                    "status": job_info.status,
+                    "duration": hours
+                })
+
+        return {
+            "summary": {
+                "pending": pending_count,
+                "running": running_count,
+                "servers": len(servers_with_jobs)
+            },
+            "jobs_by_type": jobs_by_type,
+            "jobs_by_server": jobs_by_server,
+            "long_running_jobs": sorted(long_running_jobs, key=lambda x: x["duration"], reverse=True)
+        }
+
+    except Exception as e:
+        frappe.log_error(f"Get stuck jobs summary error: {e}")
+        return {
+            "summary": {"pending": 0, "running": 0, "servers": 0},
+            "jobs_by_type": [],
+            "jobs_by_server": [],
+            "long_running_jobs": []
+        }
+
+@frappe.whitelist()
 def quick_fix_all_stuck_jobs():
     """
     Quick fix tất cả stuck jobs - có thể gọi từ UI hoặc API

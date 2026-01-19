@@ -338,6 +338,11 @@ let router = createRouter({
 			component: () => import('./pages/devtools/log-browser/LogBrowser.vue'),
 			props: true,
 		},
+		{
+			path: '/job-monitor',
+			name: 'Job Monitor',
+			component: () => import('./pages/devtools/JobMonitor.vue'),
+		},
 		...generateRoutes(),
 		{
 			path: '/:pathMatch(.*)*',
@@ -354,13 +359,13 @@ let router = createRouter({
 		// ,
 		// {
 		// 	name: 'Signup Create Site',
-		// 	path: '/create-site/:productId/setup', 
+		// 	path: '/create-site/:productId/setup',
 		// 	component: () => import('./pages/signup/SetupSite.vue'),
 		// 	props: true,
 		// 	meta: { hideSidebar: true }
 		// }
-		
-		
+
+
 	],
 });
 

@@ -145,7 +145,13 @@ export default {
 							route: '/sql-playground',
 							isActive: routeName === 'SQL Playground',
 						},
-						/*			
+						{
+							name: 'Job Monitor',
+							icon: () => h(Activity),
+							route: '/job-monitor',
+							isActive: routeName === 'Job Monitor',
+						},
+						/*
 						{
 							name: 'Binlog Browser',
 							icon: () => h(FileSearch),
@@ -159,6 +165,7 @@ export default {
 						'DB Analyzer',
 						'Log Browser',
 						'Binlog Browser',
+						'Job Monitor',
 					].includes(routeName),
 					disabled: enforce2FA,
 				},
