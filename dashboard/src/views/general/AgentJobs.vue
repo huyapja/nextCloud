@@ -1,5 +1,13 @@
 <template>
 	<CardWithDetails :title="title" :subtitle="subtitle" :showDetails="jobName">
+		<template #actions>
+			<Button
+				variant="outline"
+				:loading="$resources.fixStuckJobs?.loading"
+				@click="$resources.fixStuckJobs.submit()"
+				label="Polling Server"
+			/>
+		</template>
 		<div>
 			<router-link
 				v-for="job in $resources.jobs.data"
@@ -46,6 +54,7 @@
 <script>
 import CardWithDetails from '@/components/CardWithDetails.vue';
 import JobsDetail from './JobsDetail.vue';
+import { toast } from 'vue-sonner';
 export default {
 	name: 'AgentJobs',
 	props: ['title', 'subtitle', 'resource', 'jobName', 'jobRoute'],
@@ -58,6 +67,26 @@ export default {
 	resources: {
 		jobs() {
 			return this.resource();
+		},
+		fixStuckJobs() {
+			return {
+				url: 'press.utils.job_monitor.quick_fix_all_stuck_jobs',
+				auto: false,
+				onSuccess: (data) => {
+					if (data.message) {
+						toast.success(data.message);
+					} else {
+						toast.success(
+							`Đã poll ${data.servers_polled} server(s) với ${data.total_servers} server(s) tổng cộng`
+						);
+					}
+					// Reload jobs list
+					this.$resources.jobs.reload();
+				},
+				onError: (error) => {
+					toast.error(error.messages?.join('\n') || 'Có lỗi xảy ra khi fix stuck jobs');
+				}
+			};
 		}
 	},
 	mounted() {
