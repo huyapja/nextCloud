@@ -94,6 +94,8 @@ class ProductTrial(Document):
 			site.team = team
 			site.trial_end_date = trial_end_date
 			site.account_request = account_request
+			site.subscription_plan = plan
+			site.plan = plan
 			apps_site_config = get_app_subscriptions_site_config([d.app for d in self.apps], standby_site)
 			site._update_configuration(apps_site_config, save=False)
 			site._update_configuration(get_plan_config(plan), save=False)
