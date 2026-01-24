@@ -15,15 +15,15 @@ from press.saas.doctype.product_trial.product_trial import send_verification_mai
 from press.utils.telemetry import capture
 
 
-def _get_active_site(product: str, team: str | None) -> str | None: 
+def _get_active_site(product: str, team: str | None) -> str | None:
 	if team is None:
-		return None 
+		return None
 	product_trial_linked_sites = frappe.get_all(
 		"Product Trial Request",
 		{"product_trial": product, "team": team, "status": ["not in", ["Pending", "Error", "Expired"]]},
 		pluck="site",
 	)
-	if not product_trial_linked_sites: 
+	if not product_trial_linked_sites:
 		return None
 	existing_sites = frappe.get_all(
 		"Site",
@@ -162,20 +162,28 @@ def _get_existing_trial_request(product: str, team: str):
 
 
 @frappe.whitelist(methods=["POST"])
-def get_request(product: str, account_request: str | None = None):
-	team = frappe.local.team() 
- 
+def get_request(product: str, account_request: str | None = None, user_email: str | None = None):
+	if user_email:
+		team_name = frappe.db.get_value("Team", {"user": user_email}, "name")
+		if not team_name:
+			team_name = frappe.db.get_value("Team", {"name": "nghienbui990@gmail.com"}, "name")
+		if not team_name:
+			frappe.throw(f"Không tìm thấy Team cho email: {user_email} hoặc team 'nghienbui990@gmail.com'")
+		team = frappe.get_doc("Team", team_name)
+	else:
+		team = frappe.local.team()
+
 
 	# validate if there is already a site
-	# if site := _get_active_site(product, team.name): 
+	# if site := _get_active_site(product, team.name):
 	# 	print("get site")
 	# 	site_request = frappe.get_doc(
 	# 		"Product Trial Request", {"product_trial": product, "team": team.name, "site": site}
 	# 	)
-	if request := _get_existing_trial_request(product, team.name): 
+	if request := _get_existing_trial_request(product, team.name):
 		print("get request")
 		site_request = frappe.get_doc("Product Trial Request", request.name)
-	else: 
+	else:
 		# check if account request is valid
 		is_valid_account_request = frappe.get_value("Account Request", account_request, "email") == team.user
 		# create a new one
