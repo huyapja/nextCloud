@@ -1996,7 +1996,7 @@ class GenerateReportReports(BackgroundJobGroupByChart):
 def get_usage(site, type, timezone, timespan, timegrain):
 	log_server = frappe.db.get_single_value("Press Settings", "log_server")
 	if not log_server:
-		return {"datasets": [], "labels": []}
+		return []
 
 	url = f"https://{log_server}/elasticsearch/filebeat-*/_search"
 	password = get_decrypted_password("Log Server", log_server, "kibana_password")
@@ -2027,14 +2027,30 @@ def get_usage(site, type, timezone, timespan, timegrain):
 		},
 	}
 	print("debug: ",query)
-	response = requests.post(url, json=query, auth=("frappe", password)).json()
+	response = requests.post(url, json=query, auth=("frappe", password))
+	
+	if response.status_code != 200:
+		frappe.log_error(
+			title="Analytics API Error",
+			message=f"URL: {url}\nStatus: {response.status_code}\nText: {response.text[:500]}"
+		)
+		return []
+	
+	try:
+		response_json = response.json()
+	except requests.exceptions.JSONDecodeError as e:
+		frappe.log_error(
+			title="Analytics JSON Decode Error",
+			message=f"URL: {url}\nStatus: {response.status_code}\nText: {response.text[:500]}\nError: {str(e)}"
+		)
+		return []
 
 	buckets = []
 
-	if not response.get("aggregations"):
-		return {"datasets": [], "labels": []}
+	if not response_json.get("aggregations"):
+		return []
 
-	for bucket in response["aggregations"]["date_histogram"]["buckets"]:
+	for bucket in response_json["aggregations"]["date_histogram"]["buckets"]:
 		buckets.append(
 			frappe._dict(
 				{
